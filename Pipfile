@@ -11,6 +11,8 @@ pandas = "*"
 statsmodels = "*"
 pytest = "*"
 pytest-cov = "*"
+sphinx = "*"
+recommonmark = "*"
 
 [requires]
 python_version = "3.7"
