@@ -55,3 +55,9 @@ Push static documentation:
     script:
       - cd build/sphinx/html
       - find . -type f -exec curl -u ${NEXUS_LOGIN}:${NEXUS_PASSWORD} --ftp-create-dirs -T {} https://${NEXUS_STATIC}/packages/hcl-model/docs/{} \;
+    only:
+      changes:
+        - src/**/*
+        - .gitlab-ci.yml
+      refs:
+        - master

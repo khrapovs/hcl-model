@@ -1,69 +1,63 @@
-import pandas as pd
-import numpy as np
 from typing import List, Union, Sequence
+
+import numpy as np
+import pandas as pd
 import statsmodels.api as sm
 
 from hcl_model.time_series_model_archetype import TimeSeriesModelArchetype
 
 
 class HandCraftedLinearModel(TimeSeriesModelArchetype):
-    r"""
-    Hand Crafted Linear Model
+    r"""Hand Crafted Linear Model
 
-    This class implements a general HCL model described here:
-    https://git.signintra.com/trade-management-platform/popeyethesailor/blob/master/notebooks/modeling_decisions/hclm_model.md
+    :param endog_transform: transformation functions of the endogenous variable
+    :param exog_transform: transformation functions of the exogenous variables
 
-    The model in its most general formulation is simply a multivariate linear regression:
-    $$
-    Y_{t+m}=f\left(Y_{t,L}\right)\gamma_m^\prime
-    +g\left(X_{t+m}\right)\beta_m^\prime
-    +\varepsilon_{t+m},
-    \quad\varepsilon_{t+m}\sim IID(0,\sigma_m),
-    \quad m\in\{1,2,\ldots\},
-    $$
-    where $Y_{t,L}$ and $X_t$ are random variables observed at time $t$,
-    and $f$ and $g$ are vector-valued deterministic functions.
+    Notes
+    -----
+    This class implements a general HCL model described `here <../hcl_model_math.html>`_.
 
-    """
+    **Example of an endog_transform input:**
 
-    def __init__(self, endog_transform: dict = None, exog_transform: dict = None):
-        """
+    .. code-block:: python
 
-        Parameters
-        ----------
-        endog_transform: transformation functions of the endogenous variable
-        exog_transform: transformation functions of the exogenous variables
-
-        Example of an endog_transform input:
-        ------------------------------------
         f = {'lag1': lambda y: y.shift(1),
              'local_mean': lambda y: y.shift(1).ewm(span=5).mean()}
 
-        Note that names for f must be chosen. These names will be used to call columns of the explanatory data.
+    Note that names for f must be chosen. These names will be used to call columns of the explanatory data.
 
-        Example of a exog_transform input:
-        ----------------------------------
-        Say, exog has column names 'x1', 'x2' and 'x3' but you only want to transform
-        the first two. Then use
+    **Example of a exog_transform input:**
+
+    Say, exog has column names 'x1', 'x2' and 'x3' but you only want to transform
+    the first two. Then use
+
+    .. code-block:: python
+
         g1 = lambda x: x**x
         g2 = lambda x: x+1
         g = {'x1': g1, 'x2': g2}
 
-        This will result in 2 dimensional regressor matrix exog_transformed with just
-        the transforms and without 'x3'. If g_transform=None, then original exog is used.
+    This will result in 2 dimensional regressor matrix exog_transformed with just
+    the transforms and without `'x3'`. If `g_transform=None`, then original exog is used.
+
+    .. code-block:: python
 
         model = HandCraftedLinearModel(endog_transform=f, exog_transform=g)
 
-        This function should run only if endog_transform is not None.
+    This function should run only if `endog_transform` is not `None`.
 
-        Example of weights:
-        -------------------
+    **Example of weights:**
+
+    .. code-block:: python
+
         weights = np.power(np.arange(start=0, stop=1, step=1/len(endog)), 0.5)
 
-        Such a weighting scheme will put more focus on recent observations, with a rather slow decrease
-        to 0 with increasing distance.
+    Such a weighting scheme will put more focus on recent observations, with a rather slow decrease
+    to 0 with increasing distance.
 
-        """
+    """
+
+    def __init__(self, endog_transform: dict = None, exog_transform: dict = None):
         super().__init__()
         self._endog_transform = endog_transform
         self._exog_transform = exog_transform

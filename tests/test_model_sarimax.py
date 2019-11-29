@@ -114,6 +114,6 @@ class TestSARIMAX:
         model = SARIMAXModel(trend='n')
         model.fit(endog=endog['value'])
 
-        assert set(model.summary().index) >= {model.lbl_aic, model.lbl_r2, model.lbl_mape,
-                                              model.lbl_resid_mean, model.lbl_resid_std,
-                                              model.lbl_resid_skewness, model.lbl_resid_kurtosis}
+        assert set(model.summary().index) >= {model._lbl_aic, model._lbl_r2, model._lbl_mape,
+                                              model._lbl_resid_mean, model._lbl_resid_std,
+                                              model._lbl_resid_skewness, model._lbl_resid_kurtosis}

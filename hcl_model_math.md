@@ -13,9 +13,9 @@ In this document we present a flexible class of autoregressive time series model
 ## Model Definition
 
 The model in its most general formulation is simply a multivariate linear regression:
-$$
+```math
 Y_{t+m}=f\left(Y_{t,L}\right)\gamma_m^\prime+g\left(X_{t+m}\right)\beta_m^\prime+\varepsilon_{t+m},\quad\varepsilon_{t+m}\sim IID(0,\sigma_m),\quad m\in\{1,2,\ldots\},
-$$
+```
 where $Y_{t,L}$ and $X_t$ are random variables observed at time $t$ and $t+m$, respectively. Functions $f$ and $g$ are vector-valued deterministic functions.
 
 The purpose of the subindex $m$ is to provide a separate model for distant observations ($m>1$). This could also be achieved by an autoregressive process with $p>m$ lags and first $m$ autoregressive coefficients restricted to zero. But this would complicate estimation and implementation of the model. In our set up parameters are unrestricted.

@@ -1,7 +1,8 @@
-import pandas as pd
-from typing import List, Union
-import statsmodels.api as sm
+from typing import List
+
 import numpy as np
+import pandas as pd
+import statsmodels.api as sm
 
 from hcl_model.time_series_model_archetype import TimeSeriesModelArchetype
 
@@ -10,18 +11,14 @@ class SARIMAXModel(TimeSeriesModelArchetype):
     """
     SARIMAX model
 
-    Wrapper around `statsmodels` implementation
-    http://www.statsmodels.org/stable/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html#statsmodels.tsa.statespace.sarimax.SARIMAX
+    Wrapper around `statsmodels implementation
+    <http://www.statsmodels.org/stable/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html#statsmodels.tsa.statespace.sarimax.SARIMAX>`_.
 
+    See documentation of `statsmodels.tsa.statespace.sarimax.SARIMAX`
     """
 
     def __init__(self, order: tuple = (0, 0, 0), seasonal_order: tuple = (0, 0, 0, 0), trend: str = 'c',
                  enforce_stationarity: bool = True):
-        """
-
-        See documentation of `statsmodels.tsa.statespace.sarimax.SARIMAX`
-
-        """
         super().__init__()
         # model settings
         self._order = order

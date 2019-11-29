@@ -6,18 +6,25 @@ This package is hosted on [TSC GitLab](https://git.signintra.com/trade-managemen
 
 [**Documentation**](https://nexus.signintra.com/repository/GDSA-static/packages/hcl-model/docs/index.html)
 
-## Getting started
+## Installation
 
 Install from [private Nexus PyPi repository](https://nexus.signintra.com/#browse/browse:GDSA-PyPi):
-```
+```bash
 pip install hcl-model
 ```
 
 If you use `pipenv`, then in `Pipfile` add the following lines:
-```
+```text
 [[source]]
 name = "nexus"
 url = "https://${NEXUS_LOGIN}:${NEXUS_PASSWORD}@nexus.signintra.com/repository/GDSA-PyPi/simple"
 verify_ssl = true
 ```
 with `NEXUS_LOGIN` and `NEXUS_PASSWORD` credentials as environmental variables (ask developers).
+
+## Testing
+
+Run
+```bash
+python setup.py test
+```
