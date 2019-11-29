@@ -5,9 +5,11 @@ stages:
   - docs
   - build_wheel
   - push_wheel
+  - push_docs
 
 variables:
   NEXUS_REPOSITORY: "nexus.signintra.com/repository/GDSA-PyPi"
+  NEXUS_STATIC: "nexus.signintra.com/repository/GDSA-static"
 
 before_script:
   - export PYTHONPATH=$(pwd)/src
@@ -23,6 +25,10 @@ Docs:
     stage: docs
     script:
       - python setup.py docs
+    artifacts:
+      paths:
+        - ./build/sphinx/html/*
+      expire_in: 30 minutes
 
 Build Python Wheel:
     stage: build_wheel
@@ -43,3 +49,9 @@ Push Python Wheel:
         - .gitlab-ci.yml
       refs:
         - master
+
+Push static documentation:
+    stage: push_docs
+    script:
+      - cd build/sphinx/html
+      - find . -type f -exec curl -u ${NEXUS_LOGIN}:${NEXUS_PASSWORD} --ftp-create-dirs -T {} https://${NEXUS_STATIC}/packages/hcl-model/docs/{} \;
