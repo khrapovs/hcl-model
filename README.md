@@ -4,6 +4,8 @@ This package implements Hand Crafted Linear (HCL) model for time series forecast
 
 This package is hosted on [TSC GitLab](https://git.signintra.com/trade-management-platform/hcl-model).
 
+[**Documentation**](https://nexus.signintra.com/repository/GDSA-static/packages/hcl-model/docs/index.html)
+
 ## Getting started
 
 Install from [private Nexus PyPi repository](https://nexus.signintra.com/#browse/browse:GDSA-PyPi):
