@@ -9,13 +9,13 @@ class TimeSeriesModelArchetype(metaclass=abc.ABCMeta):
     """Time Series Model Archetype.
 
     """
-    _lbl_r2 = 'rsquared'
-    _lbl_aic = 'aic'
-    _lbl_mape = 'mape'
-    _lbl_resid_mean = 'error_mean'
-    _lbl_resid_std = 'error_std'
-    _lbl_resid_skewness = 'error_skewness'
-    _lbl_resid_kurtosis = 'error_kurtosis'
+    lbl_r2 = 'rsquared'
+    lbl_aic = 'aic'
+    lbl_mape = 'mape'
+    lbl_resid_mean = 'error_mean'
+    lbl_resid_std = 'error_std'
+    lbl_resid_skewness = 'error_skewness'
+    lbl_resid_kurtosis = 'error_kurtosis'
 
     def __init__(self):
         # object with model fit results
@@ -31,7 +31,6 @@ class TimeSeriesModelArchetype(metaclass=abc.ABCMeta):
 
         :param endog: endogenous variable
         :param exog: exogenous explanatory variables
-
         """
 
     @abc.abstractmethod
@@ -45,7 +44,6 @@ class TimeSeriesModelArchetype(metaclass=abc.ABCMeta):
         :param exog: exogenous variables should cover the whole prediction horizon
         :param quantile_levels: list of desired prediction interval levels between 0 and 100 (in percentages).
             If not provided, no confidence interval will be given as output
-
         :returns: A DataFrame containing values and prediction intervals.
 
         Example of output from `num_steps=2` and `quantile_levels=[5, 95]`:
@@ -55,7 +53,6 @@ class TimeSeriesModelArchetype(metaclass=abc.ABCMeta):
                         rate      q5     q95
             2019-06-07   102      75     127
             2019-06-14   305     206     278
-
         """
 
     @abc.abstractmethod
@@ -76,13 +73,13 @@ class TimeSeriesModelArchetype(metaclass=abc.ABCMeta):
 
         :return: A series of model fit KPIs.
         """
-        return pd.Series({self._lbl_r2: self._get_rsquared(),
-                          self._lbl_aic: self._get_aic(),
-                          self._lbl_mape: self._get_mape(),
-                          self._lbl_resid_mean: self._get_residual_mean(),
-                          self._lbl_resid_std: self._get_residual_std(),
-                          self._lbl_resid_skewness: self._get_residual_skewness(),
-                          self._lbl_resid_kurtosis: self._get_residual_kurtosis()})
+        return pd.Series({self.lbl_r2: self._get_rsquared(),
+                          self.lbl_aic: self._get_aic(),
+                          self.lbl_mape: self._get_mape(),
+                          self.lbl_resid_mean: self._get_residual_mean(),
+                          self.lbl_resid_std: self._get_residual_std(),
+                          self.lbl_resid_skewness: self._get_residual_skewness(),
+                          self.lbl_resid_kurtosis: self._get_residual_kurtosis()})
 
     @abc.abstractmethod
     def _get_aic(self) -> float:
