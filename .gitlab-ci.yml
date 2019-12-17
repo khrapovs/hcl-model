@@ -23,6 +23,10 @@ Tests:
 
 Docs:
     stage: docs
+    before_script:
+      - export PYTHONPATH=$(pwd)/src
+      - pip install pipenv
+      - pipenv install --system --deploy --skip-lock --dev
     script:
       - python setup.py docs
     artifacts:
@@ -41,6 +45,10 @@ Build Python Wheel:
 
 Push Python Wheel:
     stage: push_wheel
+    before_script:
+      - export PYTHONPATH=$(pwd)/src
+      - pip install pipenv
+      - pipenv install --system --deploy --skip-lock --dev
     script:
       - twine upload -u ${NEXUS_LOGIN} -p ${NEXUS_PASSWORD} --repository-url https://${NEXUS_REPOSITORY}/ dist/*
     only:
@@ -54,7 +62,8 @@ Push static documentation:
     stage: push_docs
     script:
       - cd build/sphinx/html
-      - find . -type f -exec curl -u ${NEXUS_LOGIN}:${NEXUS_PASSWORD} --ftp-create-dirs -T {} https://${NEXUS_STATIC}/packages/hcl-model/docs/{} \;
+      - find . -type f -exec curl -u ${NEXUS_LOGIN}:${NEXUS_PASSWORD}
+        --ftp-create-dirs -T {} https://${NEXUS_STATIC}/packages/hcl-model/docs/{} \;
     only:
       changes:
         - src/**/*
