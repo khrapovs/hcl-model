@@ -4,17 +4,15 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-
-[packages]
-numpy = "*"
-pandas = "*"
-statsmodels = "*"
 pytest = "*"
 pytest-cov = "*"
 sphinx = "*"
 recommonmark = "*"
 twine = "*"
 sphinx-rtd-theme = "*"
+
+[packages]
+hcl-model = {editable = true,path = "."}
 
 [requires]
 python_version = "3.7"
