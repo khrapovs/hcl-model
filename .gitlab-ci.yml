@@ -1,32 +1,24 @@
 image: python:3.7
 
 stages:
-  - tests
-  - docs
-  - build_wheel
-  - push_wheel
-  - push_docs
+  - tests_docs_wheel
+  - push_docs_wheel
 
 variables:
   NEXUS_REPOSITORY: "nexus.signintra.com/repository/GDSA-PyPi"
   NEXUS_STATIC: "nexus.signintra.com/repository/GDSA-static"
 
 before_script:
-  - export PYTHONPATH=$(pwd)/src
   - pip install pipenv
-  - pipenv install --system --deploy --skip-lock
+  - pipenv install --system --deploy --dev
 
 Tests:
-    stage: tests
+    stage: tests_docs_wheel
     script:
       - python setup.py test
 
 Docs:
-    stage: docs
-    before_script:
-      - export PYTHONPATH=$(pwd)/src
-      - pip install pipenv
-      - pipenv install --system --deploy --skip-lock --dev
+    stage: tests_docs_wheel
     script:
       - python setup.py docs
     artifacts:
@@ -35,7 +27,7 @@ Docs:
       expire_in: 30 minutes
 
 Build Python Wheel:
-    stage: build_wheel
+    stage: tests_docs_wheel
     script:
         - python setup.py bdist_wheel
     artifacts:
@@ -44,11 +36,7 @@ Build Python Wheel:
       expire_in: 30 minutes
 
 Push Python Wheel:
-    stage: push_wheel
-    before_script:
-      - export PYTHONPATH=$(pwd)/src
-      - pip install pipenv
-      - pipenv install --system --deploy --skip-lock --dev
+    stage: push_docs_wheel
     script:
       - twine upload -u ${NEXUS_LOGIN} -p ${NEXUS_PASSWORD} --repository-url https://${NEXUS_REPOSITORY}/ dist/*
     only:
@@ -59,7 +47,7 @@ Push Python Wheel:
         - master
 
 Push static documentation:
-    stage: push_docs
+    stage: push_docs_wheel
     script:
       - cd build/sphinx/html
       - find . -type f -exec curl -u ${NEXUS_LOGIN}:${NEXUS_PASSWORD}
