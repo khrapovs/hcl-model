@@ -44,7 +44,7 @@ Push Python Wheel:
         - src/**/*
         - .gitlab-ci.yml
       refs:
-        - master
+        - tags
 
 Push static documentation:
     stage: push_docs_wheel
@@ -57,4 +57,4 @@ Push static documentation:
         - src/**/*
         - .gitlab-ci.yml
       refs:
-        - master
+        - tags
