@@ -1,4 +1,4 @@
-from typing import List, Union, Sequence
+from typing import List, Union, Sequence, Dict, Callable
 
 import numpy as np
 import pandas as pd
@@ -57,10 +57,19 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
 
     """
 
-    def __init__(self, endog_transform: dict = None, exog_transform: dict = None):
+    lbl_original_endog = 'original_endog'
+    lbl_original_exog = 'original_exog'
+
+    def __init__(self, endog_transform: Dict[str, Callable] = None, exog_transform: Dict[str, Callable] = None):
         super().__init__()
-        self._endog_transform = endog_transform
-        self._exog_transform = exog_transform
+        if endog_transform is None:
+            self._endog_transform = {self.lbl_original_endog: lambda x: x}
+        else:
+            self._endog_transform = endog_transform
+        if exog_transform is None:
+            self._exog_transform = {self.lbl_original_exog: lambda x: x}
+        else:
+            self._exog_transform = exog_transform
         # statsmodels object with model fit results
         self._fit_results = None
         # empty Series
@@ -72,12 +81,11 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
         # this method updates class variables: `_endog` and `_exog`
         self._endog, self._exog = self._prepare_data(endog=endog, exog=exog)
 
-        # fit the parameters using OLS
-        self._fit_results = sm.WLS(endog=self._endog, missing='drop',
-                                   exog=self._transform_data(endog=self._endog,
-                                                             exog=self._get_in_sample_exog(self._endog)),
-                                   weights=weights
-                                   ).fit()
+        transformed = self._transform_all_data(endog=self._endog, exog=self._get_in_sample_exog(self._endog))
+        rhs_vars = self._convert_transformed_dict_to_frame(transformed=transformed)
+
+        # fit the parameters using WLS
+        self._fit_results = sm.WLS(endog=self._endog, exog=rhs_vars, weights=weights, missing='drop').fit()
 
     def predict(self, num_steps: int, endog: pd.Series = None, exog: pd.DataFrame = None,
                 weights: Union[Sequence, float] = 1.0,
@@ -101,8 +109,9 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
         # loop over horizon
         for j in range(num_steps):
             # take the last observation of the transformed data
-            rhs_vars = self._transform_data(endog=endog_updated[:nobs + j + 1],
-                                            exog=self._exog.iloc[:nobs + j + 1]).iloc[-1, :]
+            transformed = self._transform_all_data(endog=endog_updated[:nobs + j + 1],
+                                                   exog=self._exog.iloc[:nobs + j + 1])
+            rhs_vars = self._convert_transformed_dict_to_frame(transformed=transformed).iloc[-1, :]
             # update out-of-sample endogenous series with predicted value
             endog_updated.iloc[nobs + j] = np.dot(rhs_vars, self._get_parameters())
 
@@ -141,26 +150,32 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
         beta_simulated = (np.dot(np.random.normal(loc=0, scale=1, size=(num_simulations, num_params)),
                                  np.linalg.cholesky(self._fit_results.cov_params()).T)
                           + self._get_parameters().values)
-
+        beta_simulated = pd.DataFrame(beta_simulated, columns=self._fit_results.params.index)
         # simulate innovations for the right hand side of the model
         innovation = np.random.normal(loc=0, scale=self._fit_results.mse_resid ** .5, size=(num_steps, num_simulations))
 
-        # TODO: the outer loop should be removed!
-        # loop over simulations
-        for i in range(num_simulations):
+        # stack observed endogenous series and empty container for future simulations
+        # Series of length (nobs + num_steps)
+        endog_updated = self._endog.append(pd.Series(np.empty(num_steps)), ignore_index=True)
+        # DataFrame (nobs + num_steps) x num_simulations
+        endog_updated = pd.concat([endog_updated] * num_simulations, axis=1)
 
-            # stack observed endogenous series and empty container for future simulations
-            endog_updated = self._endog.append(pd.Series(np.empty(num_steps)), ignore_index=True)
+        # loop over horizon
+        for j in range(num_steps):
+            transformed_endog = self._transform_all_data(endog=endog_updated.iloc[:nobs + j + 1])
+            # apply model recursion plus innovation
+            temp = 0
+            for key, val in transformed_endog.items():
+                temp += val.iloc[-1, :] * beta_simulated[key]
 
-            # loop over horizon
-            for j in range(num_steps):
-                # take the last observation of the transformed data
-                rhs_vars = self._transform_data(endog=endog_updated.iloc[:nobs + j + 1],
-                                                exog=self._exog.iloc[:nobs + j + 1]).iloc[-1, :]
-                # apply model recursion plus innovation
-                simulation[j, i] = np.dot(rhs_vars, beta_simulated[i]) + innovation[j, i]
-                # update out-of-sample endogenous series with simulated value
-                endog_updated[nobs + j] = simulation[j, i]
+            transformed_exog = self._transform_all_data(exog=self._exog.iloc[:nobs + j + 1])
+            exog_df = self._convert_transformed_dict_to_frame(transformed=transformed_exog)
+            for key in exog_df.columns:
+                temp += exog_df[key].iloc[-1] * beta_simulated[key]
+
+            simulation[j] = temp + innovation[j]
+            # update out-of-sample endogenous series with simulated value
+            endog_updated.loc[nobs + j] = simulation[j]
 
         return pd.DataFrame(simulation)
 
@@ -176,31 +191,52 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
     def _get_residuals(self) -> pd.Series:
         return self._fit_results.resid
 
-    def _transform_endog(self, endog: pd.Series = None) -> pd.DataFrame:
-        """Transform series of endogenous values to use as regressors."""
-        if self._endog_transform is not None:
-            endog_transformed = pd.DataFrame()
-            for col_name, single_transform in self._endog_transform.items():
-                endog_transformed[col_name] = endog.transform(single_transform)
-            return endog_transformed
-        else:
-            return pd.DataFrame()
+    @staticmethod
+    def _transform_data(data: Union[pd.Series, pd.DataFrame] = None,
+                        transform: Dict[str, Callable] = None) -> Dict[str, Union[pd.Series, pd.DataFrame]]:
+        """Transform original data for the use as right-hand-side variables.
 
-    def _transform_exog(self, exog: pd.DataFrame = None) -> pd.DataFrame:
-        """Transform exogenous variables to use as regressors."""
-        if self._exog_transform is not None:
-            return exog.transform(self._exog_transform)
-        else:
-            return exog
+        :param data: original data
+        :param transform: dictionary with transformation functions
+        :return: dictionary with the same keys as in transform dictionary
+        """
+        transformed = dict()
+        if (transform is not None) & (data is not None):
+            for col_name, single_transform in transform.items():
+                transformed[col_name] = data.transform(single_transform)
+        return transformed
 
-    def _transform_data(self, endog: pd.Series = None, exog: pd.DataFrame = None) -> pd.DataFrame:
+    def _transform_all_data(self, endog: Union[pd.Series, pd.DataFrame] = None,
+                            exog: pd.DataFrame = None) -> Dict[str, Union[pd.Series, pd.DataFrame]]:
         """Transform data according to the model.
 
-        Return [f(Y_{t,L}), g(X_t)]. This is used in OLS estimation.
-
+        :param endog: endogenous time series or frame (when doing Monte Carlo)
+        :param exog: frame of exogenous variables
+        :return: dictionary {f(Y_{t,L}), g(X_t)} of transformed endogenous and exogenous.
+        Original endogenous variable is dropped from the dictionary to avoid using it as a right-hand-side variable.
         """
-        endog_transformed = self._transform_endog(endog=endog)
-        if endog_transformed.shape[0] == 0:
-            return self._transform_exog(exog=exog)
+        transformed_endog = self._transform_data(data=endog, transform=self._endog_transform)
+        transformed_exog = self._transform_data(data=exog, transform=self._exog_transform)
+        transformed = {**transformed_endog, **transformed_exog}
+        transformed.pop(self.lbl_original_endog, None)
+        return transformed
+
+    @staticmethod
+    def _convert_transformed_dict_to_frame(transformed: Dict[str, Union[pd.Series, pd.DataFrame]]) -> pd.DataFrame:
+        """Convert the dictionary of data into one DataFrame.
+
+        :param transformed: dictionary of transformed data
+        :return: DataFrame with transformed data.
+        Column names in the resulting frame will be concatenated from the dictionary keys
+        and column names of the inputs.
+        """
+        out = list()
+        for key, frame in transformed.items():
+            if isinstance(frame, pd.Series):
+                out.append(pd.DataFrame({key: frame}))
+            elif isinstance(frame, pd.DataFrame):
+                out.append(frame.rename(columns={col: '{} {}'.format(key, col) for col in frame.columns}))
+        if len(out) > 0:
+            return pd.concat(out, axis=1)
         else:
-            return pd.concat([endog_transformed, self._transform_exog(exog=exog)], axis=1)
+            return pd.DataFrame()
