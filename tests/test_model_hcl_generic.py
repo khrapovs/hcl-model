@@ -11,26 +11,23 @@ class TestHCL:
 
     @staticmethod
     def generate_data():
-
         nobs = 30
         index = pd.date_range('2019-01-01', periods=nobs, freq='W-FRI', name='date')
-        endog = pd.DataFrame({'value': np.arange(1, nobs+1) + np.random.normal(size=nobs)}, index=index)
-        exog = pd.DataFrame({'const': np.ones(nobs), 'time': np.arange(1, nobs+1)}, index=index)
+        endog = pd.DataFrame({'value': np.arange(1, nobs + 1) + np.random.normal(size=nobs)}, index=index)
+        exog = pd.DataFrame({'const': np.ones(nobs), 'time': np.arange(1, nobs + 1)}, index=index)
         return endog, exog
 
     def test_model_fit(self):
-
         endog, exog = self.generate_data()
 
         model = HandCraftedLinearModel()
         model.fit(endog=endog['value'], exog=exog)
         parameters = model._get_parameters()
 
-        # Some random test. No good logic here
-        assert list(parameters.index) == ['const', 'time']
+        assert list(parameters.index) == ['{} const'.format(model.lbl_original_exog),
+                                          '{} time'.format(model.lbl_original_exog)]
 
     def test_model_prediction(self):
-
         endog, exog = self.generate_data()
         model = HandCraftedLinearModel()
         num_steps = 10
@@ -43,7 +40,6 @@ class TestHCL:
         assert forecast.columns[0] == lbl_value
 
     def test_model_simulation(self):
-
         endog, exog = self.generate_data()
         model = HandCraftedLinearModel()
         num_steps = 10
@@ -90,14 +86,16 @@ class TestHCLTransforms:
         endog = pd.Series(np.arange(1, nobs + 1) + np.random.normal(size=nobs, scale=1e-1), name='value',
                           index=pd.date_range('2019-01-01', periods=nobs, freq='W-FRI', name='date'))
 
-        data = tst.add_trend(endog, trend='ct')
-        data['x3'] = 999
+        # data = tst.add_trend(endog, trend='ct')
+        data = endog.to_frame()
+        data['x2'] = np.random.normal(size=nobs)
+        data['x3'] = np.random.normal(size=nobs)
 
         f = {'lag1': lambda y: y.shift(1),
              'local_mean': lambda y: y.shift(1).ewm(span=5).mean()}
 
         g = {'const': lambda x: x + 10,
-             'trend': lambda x: -x}
+             'trend': lambda x: -x.shift(2)}
 
         return data, f, g
 
@@ -109,23 +107,72 @@ class TestHCLTransforms:
         model = HandCraftedLinearModel(endog_transform=f)
         endog = pd.Series(np.arange(5))
 
-        df = model._transform_endog(endog)
-        df_expected = pd.DataFrame()
-        for lag in lags:
-            df_expected = df_expected.assign(**{col_name.format(lag): endog.shift(lag)})
+        transformed = model._transform_data(data=endog, transform=f)
+        transformed_expected = {col_name.format(lag): endog.shift(lag) for lag in lags}
 
-        pd.testing.assert_frame_equal(df, df_expected)
+        for key, val in transformed.items():
+            pd.testing.assert_series_equal(val, transformed_expected[key])
 
-    def test_model_fit(self):
+    def test_transform_data(self):
         data, f, g = self.generate_input()
 
         model = HandCraftedLinearModel(endog_transform=f, exog_transform=g)
-        model.fit(endog=data['value'], exog=data.iloc[:, 1:])
+        endog = data['value']
+        exog = data.iloc[:, 1:]
+
+        transformed = model._transform_data(data=endog, transform=f)
+        transformed_expected = {key: endog.transform(f[key]) for key in f.keys()}
+
+        for key, val in transformed.items():
+            pd.testing.assert_series_equal(val, transformed_expected[key])
+
+        transformed = model._transform_data(data=exog, transform=g)
+        transformed_expected = {key: exog.transform(g[key]) for key in g.keys()}
+
+        for key, val in transformed.items():
+            pd.testing.assert_frame_equal(val, transformed_expected[key])
+
+        transformed = model._transform_all_data(exog=exog, endog=endog)
+        transformed_endog_expected = {key: endog.transform(f[key]) for key in f.keys()}
+        transformed_exog_expected = {key: exog.transform(g[key]) for key in g.keys()}
+
+        for key, val in transformed_endog_expected.items():
+            pd.testing.assert_series_equal(val, transformed[key])
+        for key, val in transformed_exog_expected.items():
+            pd.testing.assert_frame_equal(val, transformed[key])
+
+    def test_convert_transformed_dict_to_frame(self):
+        data, f, g = self.generate_input()
+
+        model = HandCraftedLinearModel(endog_transform=f, exog_transform=g)
+        endog = data['value']
+        exog = data.iloc[:, 1:]
+
+        transformed = model._transform_all_data(exog=exog, endog=endog)
+        transformed_df = model._convert_transformed_dict_to_frame(transformed=transformed)
+
+        keys = set(f.keys())
+        for key in g.keys():
+            keys.update({'{} {}'.format(key, col) for col in exog.columns})
+
+        assert set(transformed_df.columns) == keys
+
+    def test_model_fit(self):
+        data, f, g = self.generate_input()
+        endog = data['value']
+        exog = data.iloc[:, 1:]
+
+        model = HandCraftedLinearModel(endog_transform=f, exog_transform=g)
+        model.fit(endog=endog, exog=exog)
 
         parameters = model._get_parameters()
 
+        keys = set(f.keys())
+        for key in g.keys():
+            keys.update({'{} {}'.format(key, col) for col in exog.columns})
+
         # Some random test. No good logic here
-        assert list(parameters.index) == ['lag1', 'local_mean', 'const', 'trend']
+        assert set(parameters.index) == keys
         assert parameters.isna().sum() == 0
 
     def test_model_prediction(self):
@@ -150,9 +197,11 @@ class TestHCLTransforms:
         quantile_levels = [5, 95]
 
         model = HandCraftedLinearModel(endog_transform=f, exog_transform=g)
-        model.fit(endog=data.loc[data.index[:-num_steps], 'value'], exog=data.iloc[:-num_steps, 1:])
+        endog = data.loc[data.index[:-num_steps], 'value']
+        exog = data.iloc[:, 1:]
+        model.fit(endog=endog, exog=exog)
 
-        forecast = model.predict(exog=data.iloc[:, 1:], num_steps=num_steps, quantile_levels=quantile_levels,
+        forecast = model.predict(exog=exog, num_steps=num_steps, quantile_levels=quantile_levels,
                                  num_simulations=num_simulations)
 
         assert isinstance(forecast, pd.DataFrame)
@@ -178,20 +227,27 @@ class TestHCLWeightedTransforms:
         g = {'const': lambda x: x + 10,
              'trend': lambda x: -x}
 
-        weights = np.power(np.arange(start=0, stop=1, step=1/len(endog)), 2)
+        weights = np.power(np.arange(start=0, stop=1, step=1 / len(endog)), 2)
 
         return data, f, g, weights
 
     def test_model_fit(self):
         data, f, g, weights = self.generate_input()
 
+        endog = data['value']
+        exog = data.iloc[:, 1:]
+
         model = HandCraftedLinearModel(endog_transform=f, exog_transform=g)
-        model.fit(endog=data['value'], exog=data.iloc[:, 1:], weights=weights)
+        model.fit(endog=endog, exog=exog, weights=weights)
 
         parameters = model._get_parameters()
 
+        keys = set(f.keys())
+        for key in g.keys():
+            keys.update({'{} {}'.format(key, col) for col in exog.columns})
+
         # Some random test. No good logic here
-        assert list(parameters.index) == ['lag1', 'local_mean', 'const', 'trend']
+        assert set(parameters.index) == keys
         assert parameters.isna().sum() == 0
 
     def test_model_prediction(self):
