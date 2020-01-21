@@ -24,8 +24,10 @@ class TestHCL:
         model.fit(endog=endog['value'], exog=exog)
         parameters = model._get_parameters()
 
-        assert list(parameters.index) == ['{} const'.format(model.lbl_original_exog),
-                                          '{} time'.format(model.lbl_original_exog)]
+        params_expected = ['{} const'.format(model.lbl_original_exog),
+                           '{} time'.format(model.lbl_original_exog)]
+        assert list(parameters.index) == params_expected
+        assert set(model.summary()[model.lbl_params].keys()) == set(params_expected)
 
     def test_model_prediction(self):
         endog, exog = self.generate_data()
@@ -75,7 +77,8 @@ class TestHCL:
 
         assert set(model.summary().index) >= {model.lbl_aic, model.lbl_r2, model.lbl_mape,
                                               model.lbl_resid_mean, model.lbl_resid_std,
-                                              model.lbl_resid_skewness, model.lbl_resid_kurtosis}
+                                              model.lbl_resid_skewness, model.lbl_resid_kurtosis,
+                                              model.lbl_params}
 
 
 class TestHCLTransforms:
@@ -174,6 +177,7 @@ class TestHCLTransforms:
         # Some random test. No good logic here
         assert set(parameters.index) == keys
         assert parameters.isna().sum() == 0
+        assert set(model.summary()[model.lbl_params].keys()) == keys
 
     def test_model_prediction(self):
         data, f, g = self.generate_input()
@@ -249,6 +253,7 @@ class TestHCLWeightedTransforms:
         # Some random test. No good logic here
         assert set(parameters.index) == keys
         assert parameters.isna().sum() == 0
+        assert set(model.summary()[model.lbl_params].keys()) == keys
 
     def test_model_prediction(self):
         data, f, g, weights = self.generate_input()

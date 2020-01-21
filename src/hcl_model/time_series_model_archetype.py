@@ -16,6 +16,7 @@ class TimeSeriesModelArchetype(metaclass=abc.ABCMeta):
     lbl_resid_std = 'error_std'
     lbl_resid_skewness = 'error_skewness'
     lbl_resid_kurtosis = 'error_kurtosis'
+    lbl_params = 'parameters'
 
     def __init__(self):
         # object with model fit results
@@ -79,7 +80,8 @@ class TimeSeriesModelArchetype(metaclass=abc.ABCMeta):
                           self.lbl_resid_mean: self._get_residual_mean(),
                           self.lbl_resid_std: self._get_residual_std(),
                           self.lbl_resid_skewness: self._get_residual_skewness(),
-                          self.lbl_resid_kurtosis: self._get_residual_kurtosis()})
+                          self.lbl_resid_kurtosis: self._get_residual_kurtosis(),
+                          self.lbl_params: self._get_parameters().to_dict()})
 
     @abc.abstractmethod
     def _get_aic(self) -> float:
