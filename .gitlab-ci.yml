@@ -40,9 +40,6 @@ Push Python Wheel:
     script:
       - twine upload -u ${NEXUS_LOGIN} -p ${NEXUS_PASSWORD} --repository-url https://${NEXUS_REPOSITORY}/ dist/*
     only:
-      changes:
-        - src/**/*
-        - .gitlab-ci.yml
       refs:
         - tags
 
@@ -53,8 +50,5 @@ Push static documentation:
       - find . -type f -exec curl -u ${NEXUS_LOGIN}:${NEXUS_PASSWORD}
         --ftp-create-dirs -T {} https://${NEXUS_STATIC}/packages/hcl-model/docs/{} \;
     only:
-      changes:
-        - src/**/*
-        - .gitlab-ci.yml
       refs:
         - tags
