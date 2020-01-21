@@ -23,46 +23,42 @@ class TestSARIMAX:
         model.fit(endog=endog['value'])
         parameters = model._get_parameters()
 
-        # print(parameters)
-        # Some random test. No good logic here
         assert list(parameters.index) == ['sigma2']
         assert model._trend_fit is None
+        assert set(model.summary()[model.lbl_params].keys()) == {'sigma2'}
 
         model = SARIMAXModel(trend='c')
         model.fit(endog=endog['value'])
         parameters = model._get_parameters()
 
-        # print(parameters)
-        # Some random test. No good logic here
         assert list(parameters.index) == ['sigma2']
         assert set(model._trend_fit.params.index.values) == {'const'}
+        # trend is extracted before fitting SARIMAX, hence no 'const' among parameters
+        assert set(model.summary()[model.lbl_params].keys()) == {'sigma2'}
 
         model = SARIMAXModel(trend='ct')
         model.fit(endog=endog['value'])
         parameters = model._get_parameters()
 
-        # print(parameters)
-        # Some random test. No good logic here
         assert list(parameters.index) == ['sigma2']
         assert set(model._trend_fit.params.index.values) == {'const', 'trend'}
+        assert set(model.summary()[model.lbl_params].keys()) == {'sigma2'}
 
         model = SARIMAXModel(trend='t')
         model.fit(endog=endog['value'])
         parameters = model._get_parameters()
 
-        # print(parameters)
-        # Some random test. No good logic here
         assert list(parameters.index) == ['sigma2']
         assert set(model._trend_fit.params.index.values) == {'trend'}
+        assert set(model.summary()[model.lbl_params].keys()) == {'sigma2'}
 
         model = SARIMAXModel(trend='n')
         model.fit(endog=endog['value'], exog=exog)
         parameters = model._get_parameters()
 
-        # print(parameters)
-        # Some random test. No good logic here
         assert list(parameters.index) == ['const', 'time', 'sigma2']
         assert model._trend_fit is None
+        assert set(model.summary()[model.lbl_params].keys()) == {'const', 'time', 'sigma2'}
 
     def test_model_prediction(self):
 
@@ -116,4 +112,5 @@ class TestSARIMAX:
 
         assert set(model.summary().index) >= {model.lbl_aic, model.lbl_r2, model.lbl_mape,
                                               model.lbl_resid_mean, model.lbl_resid_std,
-                                              model.lbl_resid_skewness, model.lbl_resid_kurtosis}
+                                              model.lbl_resid_skewness, model.lbl_resid_kurtosis,
+                                              model.lbl_params}
