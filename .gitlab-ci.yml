@@ -20,7 +20,7 @@ Tests:
 Docs:
     stage: tests_docs_wheel
     script:
-      - python setup.py docs
+      - python setup.py docs -W
     artifacts:
       paths:
         - ./build/sphinx/html/*
