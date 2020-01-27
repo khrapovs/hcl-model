@@ -1,5 +1,10 @@
 ## Changelog
 
+### 0.3
+
+- Add several utility functions that help construct exogenous regressors based on a calendar. These functions are accessible through `construct_calendar_exogenous`. 
+- Add utility function to create decayed weights for weighted OLS estimation.
+
 #### 0.2.1
 
 - Add parameter dictionary to model summary output.
