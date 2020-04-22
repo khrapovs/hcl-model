@@ -88,9 +88,9 @@ class TestAddAutomaticSeasonalDummies:
         df = pd.DataFrame({lbl_endog: np.random.random(nobs) + 100},
                           index=pd.DatetimeIndex(pd.date_range('2017-01-01', periods=nobs, freq='W-FRI'),
                                                  name=lbl_date))
-        weeks = [2, 5, 10, 50]
-        for week in weeks:
-            df.loc[df.index.map(lambda x: x.isocalendar()[1]) == week, lbl_endog] += 10
+        weeks = {2: 10, 5: 5, 10: 20, 50: 7}
+        for week, change in weeks.items():
+            df.loc[df.index.map(lambda x: x.isocalendar()[1]) == week, lbl_endog] += change
             df[lbl_dummy.format(week)] = 0.
             df[lbl_dummy.format(week + 1)] = 0.
             df.loc[df.index.map(lambda x: x.isocalendar()[1]) == week, lbl_dummy.format(week)] = 1
@@ -101,7 +101,40 @@ class TestAddAutomaticSeasonalDummies:
                                                                        threshold=3,
                                                                        lim_num_dummies=len(weeks) * 2)
 
-        pd.testing.assert_frame_equal(df.sort_index(axis=1), df_result.sort_index(axis=1))
+        pd.testing.assert_frame_equal(df.sort_index(axis=1),
+                                      df_result.sort_index(axis=1))
+
+        df_result = CalendarTransformer.add_automatic_seasonal_dummies(df=df[[lbl_endog]],
+                                                                       var_name=lbl_endog,
+                                                                       threshold=3,
+                                                                       lim_num_dummies=2)
+        correct_cols = [lbl_endog, lbl_dummy.format(10), lbl_dummy.format(11)]
+
+        pd.testing.assert_frame_equal(df.filter(items=correct_cols).sort_index(axis=1),
+                                      df_result.sort_index(axis=1))
+
+        df_result = CalendarTransformer.add_automatic_seasonal_dummies(df=df[[lbl_endog]],
+                                                                       var_name=lbl_endog,
+                                                                       threshold=3,
+                                                                       lim_num_dummies=4)
+        correct_cols = [lbl_endog,
+                        lbl_dummy.format(10), lbl_dummy.format(11),
+                        lbl_dummy.format(2), lbl_dummy.format(3)]
+
+        pd.testing.assert_frame_equal(df.filter(items=correct_cols).sort_index(axis=1),
+                                      df_result.sort_index(axis=1))
+
+        df_result = CalendarTransformer.add_automatic_seasonal_dummies(df=df[[lbl_endog]],
+                                                                       var_name=lbl_endog,
+                                                                       threshold=3,
+                                                                       lim_num_dummies=6)
+        correct_cols = [lbl_endog,
+                        lbl_dummy.format(10), lbl_dummy.format(11),
+                        lbl_dummy.format(2), lbl_dummy.format(3),
+                        lbl_dummy.format(50), lbl_dummy.format(51)]
+
+        pd.testing.assert_frame_equal(df.filter(items=correct_cols).sort_index(axis=1),
+                                      df_result.sort_index(axis=1))
 
         num_dummies = 0
         for quantile in np.linspace(.99, .01, num=10):
