@@ -276,7 +276,7 @@ class CalendarTransformer:
         mean_abs_diff = data.groupby(lbl_week_number)[lbl_diff].mean().dropna()
         normalized = ((mean_abs_diff - mean_abs_diff.median()).abs()
                       / (1.4826 * median_absolute_deviation(mean_abs_diff))).sort_values(ascending=False)
-        weeks = mean_abs_diff.loc[normalized > threshold].index[:lim_num_dummies]
+        weeks = normalized.loc[normalized > threshold].index[:lim_num_dummies]
         for week in weeks:
             data[cls.lbl_auto_dummy.format(week)] = 0.
             data.loc[data.index.map(lambda x: x.isocalendar()[1]) == week, cls.lbl_auto_dummy.format(week)] = 1

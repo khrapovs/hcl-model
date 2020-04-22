@@ -1,5 +1,9 @@
 ## Changelog
 
+#### 0.3.1
+
+- Fix the bug in automatic dummy detection. Instead of taking weeks from sorted normalized series of changes, they were taken from some other intermediate result. 
+
 ### 0.3
 
 - Add several utility functions that help construct exogenous regressors based on a calendar. These functions are accessible through `construct_calendar_exogenous`. 
