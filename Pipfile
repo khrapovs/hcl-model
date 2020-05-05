@@ -12,7 +12,10 @@ twine = "*"
 sphinx-rtd-theme = "*"
 
 [packages]
-hcl-model = {editable = true,path = "."}
+numpy = "*"
+pandas = "*"
+statsmodels = "*"
+workalendar = "*"
 
 [requires]
 python_version = "3.7"

@@ -7,6 +7,7 @@ stages:
 variables:
   NEXUS_REPOSITORY: "nexus.signintra.com/repository/GDSA-PyPi"
   NEXUS_STATIC: "nexus.signintra.com/repository/GDSA-static"
+  PACKAGE_NAME: "hcl-model"
 
 before_script:
   - pip install pipenv
@@ -48,7 +49,7 @@ Push static documentation:
     script:
       - cd build/sphinx/html
       - find . -type f -exec curl -u ${NEXUS_LOGIN}:${NEXUS_PASSWORD}
-        --ftp-create-dirs -T {} https://${NEXUS_STATIC}/packages/hcl-model/docs/{} \;
+        --ftp-create-dirs -T {} https://${NEXUS_STATIC}/packages/${PACKAGE_NAME}/docs/{} \;
     only:
       refs:
         - tags
