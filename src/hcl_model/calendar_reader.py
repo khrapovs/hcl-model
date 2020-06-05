@@ -59,7 +59,7 @@ class CalendarReader:
         :return: Calendar class for specific country
         """
         if country_code in registry.region_registry.keys():
-            cal_class = registry.get_calendar_class(country_code)
+            cal_class = registry.get(country_code)
             return cal_class()
         else:
             raise RuntimeError('{} is an unknown country code!'.format(country_code))
