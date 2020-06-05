@@ -1,5 +1,9 @@
 ## Changelog
 
+#### 0.3.2
+
+- Require `workalendar` version to be greater than 10.0.0 due to a rename of `IsoRegistry.get_calendar_class()` into `IsoRegistry.get()`.
+ 
 #### 0.3.1
 
 - Fix the bug in automatic dummy detection. Instead of taking weeks from sorted normalized series of changes, they were taken from some other intermediate result. 

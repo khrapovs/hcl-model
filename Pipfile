@@ -15,7 +15,7 @@ sphinx-rtd-theme = "*"
 numpy = "*"
 pandas = "*"
 statsmodels = "*"
-workalendar = "*"
+workalendar = "==10.0.0"
 
 [requires]
 python_version = "3.7"
