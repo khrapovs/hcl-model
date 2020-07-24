@@ -16,6 +16,7 @@ numpy = "*"
 pandas = "*"
 statsmodels = "*"
 workalendar = "==10.0.0"
+skyfield = "<=1.22"
 
 [requires]
 python_version = "3.8"
