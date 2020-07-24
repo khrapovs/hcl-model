@@ -1,5 +1,9 @@
 ## Changelog
 
+#### 0.3.3
+
+- Limit the version of `skyfield` package to 1.22 due to an error `AttributeError: module 'datetime' has no attribute 'combine'`.
+
 #### 0.3.2
 
 - Require `workalendar` version to be greater than 10.0.0 due to a rename of `IsoRegistry.get_calendar_class()` into `IsoRegistry.get()`.
