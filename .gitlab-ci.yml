@@ -1,25 +1,27 @@
 image: python:3.8
 
 stages:
-  - tests_docs_wheel
-  - push_docs_wheel
+  - tests_and_docs
+  - publish_package_and_docs
 
 variables:
   NEXUS_REPOSITORY: "nexus.signintra.com/repository/GDSA-PyPi"
   NEXUS_STATIC: "nexus.signintra.com/repository/GDSA-static"
   PACKAGE_NAME: "hcl-model"
 
-before_script:
-  - pip install pipenv
-  - pipenv install --system --deploy --dev
-
 Tests:
-    stage: tests_docs_wheel
+    stage: tests_and_docs
+    before_script:
+      - pip install pipenv
+      - pipenv install --system --deploy --dev
     script:
       - python setup.py test
 
 Docs:
-    stage: tests_docs_wheel
+    stage: tests_and_docs
+    before_script:
+      - pip install pipenv
+      - pipenv install --system --deploy --dev
     script:
       - python setup.py docs -W
     artifacts:
@@ -27,29 +29,23 @@ Docs:
         - ./build/sphinx/html/*
       expire_in: 30 minutes
 
-Build Python Wheel:
-    stage: tests_docs_wheel
-    script:
-        - python setup.py bdist_wheel
-    artifacts:
-      paths:
-        - ./dist/*.whl
-      expire_in: 30 minutes
-
-Push Python Wheel:
-    stage: push_docs_wheel
-    script:
-      - twine upload -u ${NEXUS_LOGIN} -p ${NEXUS_PASSWORD} --repository-url https://${NEXUS_REPOSITORY}/ dist/*
-    only:
-      refs:
-        - tags
+Build and Push Python Wheel:
+  stage: publish_package_and_docs
+  before_script:
+    - python setup.py bdist_wheel
+    - pip install twine
+  script:
+    - twine upload -u ${NEXUS_USER} -p ${NEXUS_PASSWORD} --repository-url https://${NEXUS_REPOSITORY}/ dist/*
+  only:
+    refs:
+      - tags
 
 Push static documentation:
-    stage: push_docs_wheel
-    script:
-      - cd build/sphinx/html
-      - find . -type f -exec curl -u ${NEXUS_LOGIN}:${NEXUS_PASSWORD}
-        --ftp-create-dirs -T {} https://${NEXUS_STATIC}/packages/${PACKAGE_NAME}/docs/{} \;
-    only:
-      refs:
-        - tags
+  stage: publish_package_and_docs
+  script:
+    - cd build/sphinx/html
+    - find . -type f -exec curl -u ${NEXUS_USER}:${NEXUS_PASSWORD}
+      --ftp-create-dirs -T {} https://${NEXUS_STATIC}/packages/${PACKAGE_NAME}/docs/{} \;
+  only:
+    refs:
+      - tags
