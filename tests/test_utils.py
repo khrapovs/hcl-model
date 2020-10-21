@@ -66,6 +66,7 @@ class TestConstructCalendarExogenous:
     lbl_add_td = 'add_td'
 
     def test_construct_calendar_exogenous(self):
+        np.random.seed(42)
         nobs, num_steps = 100, 26
         endog = pd.Series(np.random.random(nobs) + 100, index=pd.date_range('2017-02-01', periods=nobs, freq='W-FRI'))
         lbl_endog = 'endog'
@@ -74,7 +75,7 @@ class TestConstructCalendarExogenous:
 
         weeks = [1, 5, 10, 50]
         for week in weeks:
-            df.loc[df.index.map(lambda x: x.isocalendar()[1]) == week, lbl_endog] += 10
+            df.loc[df.index.map(lambda x: x.isocalendar()[1]) == week, lbl_endog] += 100
             df[lbl_dummy.format(week)] = 0.
             df[lbl_dummy.format(week + 1)] = 0.
             df.loc[df.index.map(lambda x: x.isocalendar()[1]) == week, lbl_dummy.format(week)] = 1
@@ -117,7 +118,7 @@ class TestConstructCalendarExogenous:
         exog = construct_calendar_exogenous(endog=endog, num_steps=num_steps,
                                             auto_dummy_max_number=len(weeks) * 2, auto_dummy_threshold=3)
 
-        assert exog.shape == (nobs + num_steps, len(weeks) * 2 + 1)
+        assert exog.shape == (nobs + num_steps, len(weeks) + 1)
 
         holiday = {self.lbl_holiday_name: self.lbl_new_year,
                    self.lbl_country_code: self.lbl_country_code_de,
@@ -127,4 +128,4 @@ class TestConstructCalendarExogenous:
                                             auto_dummy_max_number=len(weeks) * 2, auto_dummy_threshold=3)
 
         # test that one column is dropped since automatic dummy coincides with NY
-        assert len(holiday[self.lbl_lags]) + len(weeks) * 2 - 1 == len(exog.columns)
+        assert len(holiday[self.lbl_lags]) + len(weeks) == len(exog.columns)
