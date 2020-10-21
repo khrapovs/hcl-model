@@ -272,8 +272,9 @@ class CalendarTransformer:
         lbl_week_number = 'week_number'
         data = df.copy()
         data[lbl_week_number] = data.index.map(lambda x: x.isocalendar()[1])
-        data[lbl_diff] = data[var_name].pct_change()
-        mean_abs_diff = data.groupby(lbl_week_number)[lbl_diff].mean().dropna()
+        data[lbl_diff] = data[var_name] - data[var_name].ewm(com=10).mean()
+        data[lbl_diff] = (data[lbl_diff] / data[lbl_diff].std()).abs()
+        mean_abs_diff = data.iloc[10:].groupby(lbl_week_number)[lbl_diff].mean().dropna()
         normalized = ((mean_abs_diff - mean_abs_diff.median()).abs()
                       / (1.4826 * median_absolute_deviation(mean_abs_diff))).sort_values(ascending=False)
         weeks = normalized.loc[normalized > threshold].index[:lim_num_dummies]

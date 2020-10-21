@@ -56,7 +56,7 @@ def construct_calendar_exogenous(endog: pd.Series,
                                  splines_df: int = None,
                                  holidays: List[dict] = None,
                                  auto_dummy_max_number: int = None,
-                                 auto_dummy_threshold: float = 3) -> Union[None, pd.DataFrame]:
+                                 auto_dummy_threshold: float = 2) -> Union[None, pd.DataFrame]:
     """Construct deterministic exogenous variables.
 
     :param endog: time series of endogenous regressor

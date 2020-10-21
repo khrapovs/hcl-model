@@ -1,5 +1,9 @@
 ## Changelog
 
+#### 0.3.4
+
+- Change the way seasonal outliers are detected. Instead of looking at percentage changes, the focus now is at the absolute deviation from the exponentially weighted moving average.
+
 #### 0.3.3
 
 - Limit the version of `skyfield` package to 1.22 due to an error `AttributeError: module 'datetime' has no attribute 'combine'`.

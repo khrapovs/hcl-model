@@ -81,6 +81,7 @@ class TestCalendarTransformer:
 
 class TestAddAutomaticSeasonalDummies:
     def test_add_automatic_seasonal_dummies(self):
+        np.random.seed(42)
         nobs = 200
         lbl_endog = 'endog'
         lbl_date = 'date'
@@ -92,9 +93,9 @@ class TestAddAutomaticSeasonalDummies:
         for week, change in weeks.items():
             df.loc[df.index.map(lambda x: x.isocalendar()[1]) == week, lbl_endog] += change
             df[lbl_dummy.format(week)] = 0.
-            df[lbl_dummy.format(week + 1)] = 0.
+            # df[lbl_dummy.format(week + 1)] = 0.
             df.loc[df.index.map(lambda x: x.isocalendar()[1]) == week, lbl_dummy.format(week)] = 1
-            df.loc[df.index.map(lambda x: x.isocalendar()[1]) == week + 1, lbl_dummy.format(week + 1)] = 1
+            # df.loc[df.index.map(lambda x: x.isocalendar()[1]) == week + 1, lbl_dummy.format(week + 1)] = 1
 
         df_result = CalendarTransformer.add_automatic_seasonal_dummies(df=df[[lbl_endog]],
                                                                        var_name=lbl_endog,
@@ -108,7 +109,8 @@ class TestAddAutomaticSeasonalDummies:
                                                                        var_name=lbl_endog,
                                                                        threshold=3,
                                                                        lim_num_dummies=2)
-        correct_cols = [lbl_endog, lbl_dummy.format(10), lbl_dummy.format(11)]
+
+        correct_cols = [lbl_endog, lbl_dummy.format(10), lbl_dummy.format(2)]
 
         pd.testing.assert_frame_equal(df.filter(items=correct_cols).sort_index(axis=1),
                                       df_result.sort_index(axis=1))
@@ -118,8 +120,8 @@ class TestAddAutomaticSeasonalDummies:
                                                                        threshold=3,
                                                                        lim_num_dummies=4)
         correct_cols = [lbl_endog,
-                        lbl_dummy.format(10), lbl_dummy.format(11),
-                        lbl_dummy.format(2), lbl_dummy.format(3)]
+                        lbl_dummy.format(10), lbl_dummy.format(50),
+                        lbl_dummy.format(2), lbl_dummy.format(5)]
 
         pd.testing.assert_frame_equal(df.filter(items=correct_cols).sort_index(axis=1),
                                       df_result.sort_index(axis=1))
@@ -129,9 +131,10 @@ class TestAddAutomaticSeasonalDummies:
                                                                        threshold=3,
                                                                        lim_num_dummies=6)
         correct_cols = [lbl_endog,
-                        lbl_dummy.format(10), lbl_dummy.format(11),
-                        lbl_dummy.format(2), lbl_dummy.format(3),
-                        lbl_dummy.format(50), lbl_dummy.format(51)]
+                        lbl_dummy.format(10),
+                        lbl_dummy.format(2),
+                        lbl_dummy.format(5),
+                        lbl_dummy.format(50)]
 
         pd.testing.assert_frame_equal(df.filter(items=correct_cols).sort_index(axis=1),
                                       df_result.sort_index(axis=1))
