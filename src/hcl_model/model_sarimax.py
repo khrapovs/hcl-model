@@ -2,7 +2,9 @@ from typing import List
 
 import numpy as np
 import pandas as pd
-import statsmodels.api as sm
+from statsmodels.regression.linear_model import OLS
+from statsmodels.tsa.statespace.sarimax import SARIMAX
+from statsmodels.tsa.tsatools import add_trend
 
 from hcl_model.time_series_model_archetype import TimeSeriesModelArchetype
 
@@ -45,7 +47,7 @@ class SARIMAXModel(TimeSeriesModelArchetype):
         self._endog = self._remove_trend(self._endog)
 
         # fit the parameters using OLS
-        self._fit_results = sm.tsa.SARIMAX(
+        self._fit_results = SARIMAX(
             self._endog,
             exog=self._get_in_sample_exog(self._endog),
             order=self._order,
@@ -114,7 +116,7 @@ class SARIMAXModel(TimeSeriesModelArchetype):
             self._get_num_observations(self._endog) + num_steps,
         )
         # initialize out-of-sample model
-        sim_model = sm.tsa.SARIMAX(
+        sim_model = SARIMAX(
             pd.Series(index=self._exog.iloc[idx].index, dtype=float),
             exog=self._exog.iloc[idx],
             order=self._order,
@@ -161,10 +163,10 @@ class SARIMAXModel(TimeSeriesModelArchetype):
             return endog
         else:
             name = endog.name
-            trend = sm.tsa.tsatools.add_trend(
+            trend = add_trend(
                 self._endog, trend=self._trend, prepend=False
             )
-            self._trend_fit = sm.OLS(endog, trend.iloc[:, 1:]).fit()
+            self._trend_fit = OLS(endog, trend.iloc[:, 1:]).fit()
             endog -= self._trend_fit.fittedvalues
             return endog.rename_axis(name)
 
@@ -172,7 +174,7 @@ class SARIMAXModel(TimeSeriesModelArchetype):
         if self._trend == "n":
             return df
         else:
-            exog = sm.tsa.tsatools.add_trend(
+            exog = add_trend(
                 pd.Series(np.ones(nobs + df.shape[0])),
                 trend=self._trend,
                 prepend=False,

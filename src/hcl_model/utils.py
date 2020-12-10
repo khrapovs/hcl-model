@@ -2,7 +2,7 @@ from typing import List, Union
 
 import numpy as np
 import pandas as pd
-from statsmodels.tsa import tsatools as tst
+from statsmodels.tsa.tsatools import add_trend
 
 from hcl_model.calendar_transformer import CalendarTransformer
 
@@ -90,7 +90,7 @@ def construct_calendar_exogenous(
         )
     )
 
-    df = tst.add_trend(extended, trend=trend)
+    df = add_trend(extended, trend=trend)
     cal_transformer = CalendarTransformer()
 
     if splines_df is not None:
