@@ -21,7 +21,7 @@ class TimeSeriesModelArchetype(metaclass=abc.ABCMeta):
         # object with model fit results
         self._fit_results = None
         # empty Series
-        self._endog = pd.Series()
+        self._endog = pd.Series(dtype=float)
         self._exog = pd.DataFrame()
 
     @abc.abstractmethod

@@ -3,6 +3,7 @@
 ### Unreleased
 - Use `median_abs_deviation` instead of deprecated `median_absolute_deviation`. This requires `scipy>=1.5`.
 - Use `dates.isocalendar().week` instead of deprecated `dates.week`. This requires `pandas>=1.1`.
+- Silence warning about default `dtype` in empty `Series`. Now `dtype=float`.
 
 ### 0.3.4 (2020-10-21)
 - Change the way seasonal outliers are detected. Instead of looking at percentage changes, the focus now is at the absolute deviation from the exponentially weighted moving average.
