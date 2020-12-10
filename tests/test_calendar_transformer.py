@@ -157,12 +157,10 @@ class TestAddAutomaticSeasonalDummies:
                 df.index.map(lambda x: x.isocalendar()[1]) == week, lbl_endog
             ] += change
             df[lbl_dummy.format(week)] = 0.0
-            # df[lbl_dummy.format(week + 1)] = 0.
             df.loc[
                 df.index.map(lambda x: x.isocalendar()[1]) == week,
                 lbl_dummy.format(week),
             ] = 1
-            # df.loc[df.index.map(lambda x: x.isocalendar()[1]) == week + 1, lbl_dummy.format(week + 1)] = 1
 
         df_result = CalendarTransformer.add_automatic_seasonal_dummies(
             df=df[[lbl_endog]],
