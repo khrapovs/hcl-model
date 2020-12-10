@@ -2,7 +2,7 @@ import functools
 
 import numpy as np
 import pandas as pd
-import statsmodels.tsa.tsatools as tst
+from statsmodels.tsa.tsatools import add_trend
 
 from hcl_model.model_hcl_generic import HandCraftedLinearModel
 
@@ -107,7 +107,6 @@ class TestHCLTransforms:
             index=pd.date_range("2019-01-01", periods=nobs, freq="W-FRI", name="date"),
         )
 
-        # data = tst.add_trend(endog, trend='ct')
         data = endog.to_frame()
         data["x2"] = np.random.normal(size=nobs)
         data["x3"] = np.random.normal(size=nobs)
@@ -255,7 +254,7 @@ class TestHCLWeightedTransforms:
             index=pd.date_range("2019-01-01", periods=nobs, freq="W-FRI", name="date"),
         )
 
-        data = tst.add_trend(endog, trend="ct")
+        data = add_trend(endog, trend="ct")
         data["x3"] = 999
 
         f = {

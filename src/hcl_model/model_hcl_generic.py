@@ -2,7 +2,7 @@ from typing import List, Union, Sequence, Dict, Callable
 
 import numpy as np
 import pandas as pd
-import statsmodels.api as sm
+from statsmodels.regression.linear_model import WLS
 
 from hcl_model.time_series_model_archetype import TimeSeriesModelArchetype
 
@@ -97,7 +97,7 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
         rhs_vars = self._convert_transformed_dict_to_frame(transformed=transformed)
 
         # fit the parameters using WLS
-        self._fit_results = sm.WLS(
+        self._fit_results = WLS(
             endog=self._endog, exog=rhs_vars, weights=weights, missing="drop"
         ).fit()
 
