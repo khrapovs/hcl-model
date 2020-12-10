@@ -33,7 +33,7 @@ class SARIMAXModel(TimeSeriesModelArchetype):
         # statsmodels object with model fit results
         self._fit_results = None
         # empty Series
-        self._endog = pd.Series()
+        self._endog = pd.Series(dtype=float)
         self._exog = None
         self._trend_fit = None
 
@@ -115,7 +115,7 @@ class SARIMAXModel(TimeSeriesModelArchetype):
         )
         # initialize out-of-sample model
         sim_model = sm.tsa.SARIMAX(
-            pd.Series(index=self._exog.iloc[idx].index),
+            pd.Series(index=self._exog.iloc[idx].index, dtype=float),
             exog=self._exog.iloc[idx],
             order=self._order,
             seasonal_order=self._seasonal_order,
