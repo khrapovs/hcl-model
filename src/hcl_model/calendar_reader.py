@@ -9,7 +9,9 @@ class CalendarReader:
     lbl = LabelsCommon()
     lbl_holidays_out = LabelsHolidaysOut()
 
-    def get_holidays(self, holiday_name: str, country_code: str, from_year: int, to_year: int) -> pd.DataFrame:
+    def get_holidays(
+        self, holiday_name: str, country_code: str, from_year: int, to_year: int
+    ) -> pd.DataFrame:
         """Import holidays.
 
         The reader uses 'workalendar' library available here: https://pypi.org/project/workalendar/.
@@ -42,17 +44,30 @@ class CalendarReader:
         cal = self._get_calendar(country_code)
 
         # Go over all holidays in each year find those that match the request
-        holiday_list = [x[0] for year in range(from_year, to_year) for x in cal.holidays(year) if holiday_name == x[1]]
+        holiday_list = [
+            x[0]
+            for year in range(from_year, to_year)
+            for x in cal.holidays(year)
+            if holiday_name == x[1]
+        ]
         if not holiday_list:
-            raise RuntimeError('Holiday "{}" was not found in "{}" calendar!'.format(holiday_name, country_code))
+            raise RuntimeError(
+                'Holiday "{}" was not found in "{}" calendar!'.format(
+                    holiday_name, country_code
+                )
+            )
 
         # Create a DataFrame with date as index, country and holiday name as columns
-        return pd.DataFrame({self.lbl_holidays_out.lbl_holiday: holiday_name,
-                             self.lbl_holidays_out.lbl_country: country_code},
-                            index=pd.Index(pd.to_datetime(holiday_list), name=self.lbl.date))
+        return pd.DataFrame(
+            {
+                self.lbl_holidays_out.lbl_holiday: holiday_name,
+                self.lbl_holidays_out.lbl_country: country_code,
+            },
+            index=pd.Index(pd.to_datetime(holiday_list), name=self.lbl.date),
+        )
 
     @staticmethod
-    def _get_calendar(country_code: str = 'CN') -> Calendar:
+    def _get_calendar(country_code: str = "CN") -> Calendar:
         """Get calendar object given two-letter code of a country.
 
         :param country_code: two letter country code, e.g. `DE` or `CN`
@@ -62,4 +77,4 @@ class CalendarReader:
             cal_class = registry.get(country_code)
             return cal_class()
         else:
-            raise RuntimeError('{} is an unknown country code!'.format(country_code))
+            raise RuntimeError("{} is an unknown country code!".format(country_code))

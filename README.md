@@ -21,9 +21,29 @@ url = "https://nexus.signintra.com/repository/pypi-all/simple"
 verify_ssl = true
 ```
 
-## Testing
+## Contribute
 
-Run
+Create a virtual environment and activate it
 ```bash
+python -m venv venv
+source venv/bin/activate
+```
+
+Install development packages:
+```bash
+pip install -e .
+```
+
+Run tests:
+```bash
+pip install -e .[testing]
 python setup.py test
 ```
+
+Build documentation:
+```bash
+pip install -e .[docs]
+python setup.py docs -W
+```
+
+**Note:** Do not push directly to master! Please, submit a MR for review, make sure that Gitlab CI/CD pipelines pass.

@@ -7,16 +7,18 @@ class TestCalendarReader:
 
     from_year = 2005
     to_year = 2030
-    lbl_new_year = 'New year'
+    lbl_new_year = "New year"
 
-    lbl_country_code_de = 'DE'
-    lbl_country_code_cn = 'CN'
-    lbl_country_code_tw = 'TW'
+    lbl_country_code_de = "DE"
+    lbl_country_code_cn = "CN"
+    lbl_country_code_tw = "TW"
 
     def test_get_holidays(self):
         cal_reader = CalendarReader()
 
-        df = cal_reader.get_holidays(self.lbl_new_year, self.lbl_country_code_de, self.from_year, self.to_year)
+        df = cal_reader.get_holidays(
+            self.lbl_new_year, self.lbl_country_code_de, self.from_year, self.to_year
+        )
 
         assert df.shape[0] == self.to_year - self.from_year
         assert set(df.values.ravel()) == {self.lbl_new_year, self.lbl_country_code_de}
