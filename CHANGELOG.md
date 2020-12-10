@@ -1,6 +1,6 @@
 ## Changelog
 
-### Unreleased
+### 0.3.5 (2020-12-10)
 - Use `median_abs_deviation` instead of deprecated `median_absolute_deviation`. This requires `scipy>=1.5`.
 - Use `dates.isocalendar().week` instead of deprecated `dates.week`. This requires `pandas>=1.1`.
 - Silence warning about default `dtype` in empty `Series`. Now `dtype=float`.

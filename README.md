@@ -46,4 +46,10 @@ pip install -e .[docs]
 python setup.py docs -W
 ```
 
+Format the code with `black` by running the following script:
+```bash
+pip install -e .[dev]
+sh pre-commit-hook.sh
+```
+
 **Note:** Do not push directly to master! Please, submit a MR for review, make sure that Gitlab CI/CD pipelines pass.
