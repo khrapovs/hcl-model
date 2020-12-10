@@ -12,16 +12,14 @@ variables:
 Tests:
     stage: tests_and_docs
     before_script:
-      - pip install pipenv
-      - pipenv install --system --deploy --dev
+      - pip install -e .[testing]
     script:
       - python setup.py test
 
 Docs:
     stage: tests_and_docs
     before_script:
-      - pip install pipenv
-      - pipenv install --system --deploy --dev
+      - pip install -e .[docs]
     script:
       - python setup.py docs -W
     artifacts:

@@ -7,7 +7,9 @@ from statsmodels.tsa import tsatools as tst
 from hcl_model.calendar_transformer import CalendarTransformer
 
 
-def decayed_weights(endog: pd.Series, full_weight_obs: int = 52, downweight_order: int = 2) -> np.ndarray:
+def decayed_weights(
+    endog: pd.Series, full_weight_obs: int = 52, downweight_order: int = 2
+) -> np.ndarray:
     """Construct weights starting to decay at `start_from` with polynomial order.
 
     :param endog: pd.Series with index of datetime type in consecutive order.
@@ -20,7 +22,10 @@ def decayed_weights(endog: pd.Series, full_weight_obs: int = 52, downweight_orde
     if len_weights <= full_weight_obs:
         return np.ones(len_weights)
     else:
-        downweighted = np.power(np.linspace(start=0, stop=1, num=len_weights - full_weight_obs), downweight_order)
+        downweighted = np.power(
+            np.linspace(start=0, stop=1, num=len_weights - full_weight_obs),
+            downweight_order,
+        )
         return np.concatenate((downweighted, np.ones(full_weight_obs)), axis=None)
 
 
@@ -50,13 +55,15 @@ def _get_duplicate_columns(df: pd.DataFrame) -> List[str]:
     return list(duplicate_column_names)
 
 
-def construct_calendar_exogenous(endog: pd.Series,
-                                 num_steps: int = 52,
-                                 trend: str = 'c',
-                                 splines_df: int = None,
-                                 holidays: List[dict] = None,
-                                 auto_dummy_max_number: int = None,
-                                 auto_dummy_threshold: float = 2) -> Union[None, pd.DataFrame]:
+def construct_calendar_exogenous(
+    endog: pd.Series,
+    num_steps: int = 52,
+    trend: str = "c",
+    splines_df: int = None,
+    holidays: List[dict] = None,
+    auto_dummy_max_number: int = None,
+    auto_dummy_threshold: float = 2,
+) -> Union[None, pd.DataFrame]:
     """Construct deterministic exogenous variables.
 
     :param endog: time series of endogenous regressor
@@ -73,27 +80,37 @@ def construct_calendar_exogenous(endog: pd.Series,
     :return: DataFrame with exogenous regressors.
     """
     if endog.name is None:
-        endog.name = 'endog'
+        endog.name = "endog"
 
-    extended = endog.reindex(pd.date_range(start=endog.index[0],
-                                           periods=endog.shape[0] + num_steps,
-                                           freq=pd.infer_freq(endog.index)))
+    extended = endog.reindex(
+        pd.date_range(
+            start=endog.index[0],
+            periods=endog.shape[0] + num_steps,
+            freq=pd.infer_freq(endog.index),
+        )
+    )
 
     df = tst.add_trend(extended, trend=trend)
     cal_transformer = CalendarTransformer()
 
     if splines_df is not None:
-        df = cal_transformer.add_periodic_splines(df, degrees_of_freedom=int(splines_df))
+        df = cal_transformer.add_periodic_splines(
+            df, degrees_of_freedom=int(splines_df)
+        )
 
     if holidays is not None:
         for i, holiday in enumerate(holidays):
             if holiday is not None:
-                df = cal_transformer.add_holiday_dummies(df, **holiday, dummy_name='holiday_{}'.format(i + 1))
+                df = cal_transformer.add_holiday_dummies(
+                    df, **holiday, dummy_name="holiday_{}".format(i + 1)
+                )
 
     if auto_dummy_max_number is not None:
-        df = cal_transformer.add_automatic_seasonal_dummies(df=df,
-                                                            var_name=endog.name,
-                                                            threshold=auto_dummy_threshold,
-                                                            lim_num_dummies=auto_dummy_max_number)
+        df = cal_transformer.add_automatic_seasonal_dummies(
+            df=df,
+            var_name=endog.name,
+            threshold=auto_dummy_threshold,
+            lim_num_dummies=auto_dummy_max_number,
+        )
 
     return df.drop(columns=_get_duplicate_columns(df)).iloc[:, 1:]
