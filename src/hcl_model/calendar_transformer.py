@@ -374,7 +374,7 @@ class CalendarTransformer:
         )
         normalized = (
             (mean_abs_diff - mean_abs_diff.median()).abs()
-            / median_abs_deviation(mean_abs_diff, scale=1/1.4826**2)
+            / median_abs_deviation(mean_abs_diff, scale=1 / 1.4826 ** 2)
         ).sort_values(ascending=False)
         weeks = normalized.loc[normalized > threshold].index[:lim_num_dummies]
         for week in weeks:
