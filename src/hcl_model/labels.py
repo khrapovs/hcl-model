@@ -2,6 +2,7 @@ class LabelsCommon:
     date = "date"
     isoweek = "isoweek"
     month = "month"
+    day = "day"
 
 
 class LabelsExog:

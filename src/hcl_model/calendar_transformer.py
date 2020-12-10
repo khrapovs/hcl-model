@@ -76,7 +76,7 @@ class CalendarTransformer:
         return data.drop(self.lbl_exog.lbl_calendar_numeric, axis=1)
 
     def _get_numeric_periodicity(
-        self, dates: pd.Series, input_level: str = "isoweek"
+        self, dates: pd.DatetimeIndex, input_level: str = "isoweek"
     ) -> pd.Series:
         """
         Add a column of numeric scores between 0 and 1 that represent annual periodicity.
@@ -87,11 +87,13 @@ class CalendarTransformer:
         dates must have datetime data type.
         """
         if input_level == self.lbl.isoweek:
-            return dates.week / 53
+            return dates.isocalendar().week / 53
         elif input_level == self.lbl.month:
             return dates.month / 12
+        elif input_level == self.lbl.day:
+            return dates.isocalendar().day / 366
         else:
-            return dates.day / 366
+            raise ValueError(f"Unknown input_level argument: {input_level}")
 
     def add_holiday_triangles(
         self,
