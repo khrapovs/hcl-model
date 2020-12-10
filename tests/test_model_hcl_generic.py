@@ -68,7 +68,7 @@ class TestHCL(TestModelCommon):
         assert forecast.shape == (num_steps, len(quantile_levels) + 1)
         assert forecast.columns[0] == lbl_value
 
-    def test_summary(self):
+    def test_model_summary(self):
         endog, exog = self.generate_data()
 
         model = HandCraftedLinearModel()
