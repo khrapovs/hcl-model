@@ -163,9 +163,7 @@ class SARIMAXModel(TimeSeriesModelArchetype):
             return endog
         else:
             name = endog.name
-            trend = add_trend(
-                self._endog, trend=self._trend, prepend=False
-            )
+            trend = add_trend(self._endog, trend=self._trend, prepend=False)
             self._trend_fit = OLS(endog, trend.iloc[:, 1:]).fit()
             endog -= self._trend_fit.fittedvalues
             return endog.rename_axis(name)

@@ -58,7 +58,9 @@ class TestCalendarTransformer:
         with pytest.raises(ValueError) as error:
             wrong_input_level = "wrong_input_level"
             cal_transformer.add_periodic_splines(
-                df=xreg, degrees_of_freedom=degrees_of_freedom, input_level=wrong_input_level
+                df=xreg,
+                degrees_of_freedom=degrees_of_freedom,
+                input_level=wrong_input_level,
             )
 
         assert wrong_input_level in str(error)

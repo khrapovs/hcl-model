@@ -5,21 +5,10 @@ import pandas as pd
 from statsmodels.tsa.tsatools import add_trend
 
 from hcl_model.model_hcl_generic import HandCraftedLinearModel
+from tests.test_model_common import TestModelCommon
 
 
-class TestHCL:
-    @staticmethod
-    def generate_data():
-        nobs = 30
-        index = pd.date_range("2019-01-01", periods=nobs, freq="W-FRI", name="date")
-        endog = pd.DataFrame(
-            {"value": np.arange(1, nobs + 1) + np.random.normal(size=nobs)}, index=index
-        )
-        exog = pd.DataFrame(
-            {"const": np.ones(nobs), "time": np.arange(1, nobs + 1)}, index=index
-        )
-        return endog, exog
-
+class TestHCL(TestModelCommon):
     def test_model_fit(self):
         endog, exog = self.generate_data()
 
