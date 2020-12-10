@@ -2,7 +2,7 @@ from typing import Iterable
 
 import pandas as pd
 from patsy import dmatrix
-from scipy.stats import median_absolute_deviation
+from scipy.stats import median_abs_deviation
 
 from hcl_model.calendar_reader import CalendarReader
 from hcl_model.labels import LabelsCommon, LabelsExog
@@ -374,7 +374,7 @@ class CalendarTransformer:
         )
         normalized = (
             (mean_abs_diff - mean_abs_diff.median()).abs()
-            / (1.4826 * median_absolute_deviation(mean_abs_diff))
+            / median_abs_deviation(mean_abs_diff, scale=1/1.4826**2)
         ).sort_values(ascending=False)
         weeks = normalized.loc[normalized > threshold].index[:lim_num_dummies]
         for week in weeks:
