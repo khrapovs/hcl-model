@@ -1,5 +1,9 @@
 ## Changelog
 
+### 0.3.6 (2021-01-04)
+- Remove version restriction on `skyfield`.
+- Limit `pandas` version by 1.1.5 pending incompatibility fix `patsy` 0.5.1.
+
 ### 0.3.5 (2020-12-10)
 - Use `median_abs_deviation` instead of deprecated `median_absolute_deviation`. This requires `scipy>=1.5`.
 - Use `dates.isocalendar().week` instead of deprecated `dates.week`. This requires `pandas>=1.1`.
