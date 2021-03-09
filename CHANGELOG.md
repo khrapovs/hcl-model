@@ -1,5 +1,8 @@
 ## Changelog
 
+### 0.3.7 (2021-03-09)
+- Remove upper constraint on `pandas` version.
+
 ### 0.3.6 (2021-01-04)
 - Remove version restriction on `skyfield`.
 - Limit `pandas` version by 1.1.5 pending incompatibility fix `patsy` 0.5.1.
