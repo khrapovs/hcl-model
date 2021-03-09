@@ -55,19 +55,17 @@ class CalendarTransformer:
         data = df.copy(deep=True)
         data[self.lbl_exog.lbl_calendar_numeric] = self._get_numeric_periodicity(
             data.index, input_level=input_level
-        )
+        ).astype(float)
 
         # the 'cc' part in the string of the dmatrix call is responsible for periodic splines.
-        formula = "cc({}, df={}, constraints='center') - 1".format(
-            self.lbl_exog.lbl_calendar_numeric, degrees_of_freedom
-        )
+        formula = f"cc({self.lbl_exog.lbl_calendar_numeric}, df={degrees_of_freedom}, constraints='center') - 1"
         calendar_matrix = dmatrix(formula, data=data, return_type="dataframe")
 
         # rename columns for convenience
         cols = calendar_matrix.columns
         calendar_matrix = calendar_matrix.rename(
             columns={
-                col: "{}_{}".format(self.lbl_exog.lbl_spline_dim, num + 1)
+                col: f"{self.lbl_exog.lbl_spline_dim}_{num + 1}"
                 for num, col in enumerate(cols)
             }
         )
