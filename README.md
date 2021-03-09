@@ -8,48 +8,39 @@ This package is hosted on [TSC GitLab](https://git.signintra.com/gdsa/python-lib
 
 ## Installation
 
-Install from [private Nexus PyPi repository](https://nexus.signintra.com/#browse/browse:pypi-all):
-```bash
-pip install -extra-index-url https://nexus.signintra.com/repository/pypi-all/simple hcl-model
-```
-
-If you use `pipenv`, then in `Pipfile` add the following lines:
-```text
-[[source]]
-name = "nexus"
-url = "https://nexus.signintra.com/repository/pypi-all/simple"
-verify_ssl = true
+Simply run while being inside of Schenker network:
+```shell
+export PIP_EXTRA_INDEX_URL="https://${NEXUS_LOGIN}:${NEXUS_PASSWORD}@nexus.signintra.com/repository/pypi-all/simple"
+pip install hcl-model
 ```
 
 ## Contribute
 
 Create a virtual environment and activate it
-```bash
+```shell
 python -m venv venv
 source venv/bin/activate
 ```
-
 Install development packages:
-```bash
+```shell
 pip install -e .
 ```
-
 Run tests:
-```bash
+```shell
 pip install -e .[testing]
-python setup.py test
+pytest
 ```
-
 Build documentation:
-```bash
+```shell
 pip install -e .[docs]
 python setup.py docs -W
 ```
-
-Format the code with `black` by running the following script:
-```bash
+Install pre-commit, that will automatically apply black to all your modified python files at commit time:
+```shell
 pip install -e .[dev]
-sh pre-commit-hook.sh
+pip install pre-commit
+pre-commit install
 ```
+Notice that if black modifies some files, the commit will fail, and you will need to commit again.
 
 **Note:** Do not push directly to master! Please, submit a MR for review, make sure that Gitlab CI/CD pipelines pass.
