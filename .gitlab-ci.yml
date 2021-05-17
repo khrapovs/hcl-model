@@ -1,4 +1,4 @@
-image: python:3.9
+image: docker.signintra.com/gdsa/dsa002-dockerhub-copies/python:3.9
 
 stages:
   - tests_and_docs
@@ -12,26 +12,26 @@ variables:
 Tests:
     stage: tests_and_docs
     before_script:
-      - pip install -e .[testing]
+      - pip install -e .[test]
     script:
-      - pytest
+      - pytest --cov hcl_model
 
 Docs:
     stage: tests_and_docs
     before_script:
-      - pip install -e .[docs]
+      - pip install -e .[doc]
     script:
-      - python setup.py docs -W
+      - mkdocs build
     artifacts:
       paths:
-        - ./build/sphinx/html/*
+        - site
       expire_in: 30 minutes
 
 Build and Push Python Wheel:
   stage: publish_package_and_docs
   before_script:
-    - python setup.py bdist_wheel
-    - pip install twine
+    - pip install .[deploy]
+    - python -m build
   script:
     - twine upload -u ${NEXUS_USER} -p ${NEXUS_PASSWORD} --repository-url https://${NEXUS_REPOSITORY}/ dist/*
   only:
@@ -41,7 +41,7 @@ Build and Push Python Wheel:
 Push static documentation:
   stage: publish_package_and_docs
   script:
-    - cd build/sphinx/html
+    - cd site
     - find . -type f -exec curl -u ${NEXUS_USER}:${NEXUS_PASSWORD}
       --ftp-create-dirs -T {} https://${NEXUS_STATIC}/packages/${PACKAGE_NAME}/docs/{} \;
   only:

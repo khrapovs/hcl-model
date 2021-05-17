@@ -21,26 +21,28 @@ Create a virtual environment and activate it
 python -m venv venv
 source venv/bin/activate
 ```
-Install development packages:
+Install the development packages
 ```shell
-pip install -e .
+pip install -e .[dev]
+```
+and use pre-commit to make sure that your code is blackified automatically (used the `black` package):
+```shell
+pre-commit install
 ```
 Run tests:
 ```shell
-pip install -e .[testing]
+pip install -e .[test]
 pytest
 ```
-Build documentation:
+Build documentation (see more details [here](https://www.mkdocs.org/#getting-started)):
 ```shell
-pip install -e .[docs]
-python setup.py docs -W
+pip install -e .[doc]
+mkdocs build
 ```
-Install pre-commit, that will automatically apply black to all your modified python files at commit time:
+or use
 ```shell
-pip install -e .[dev]
-pip install pre-commit
-pre-commit install
+mkdocs serve
 ```
-Notice that if black modifies some files, the commit will fail, and you will need to commit again.
+if you prefer a live, self-refreshing, documentation.
 
 **Note:** Do not push directly to master! Please, submit a MR for review, make sure that Gitlab CI/CD pipelines pass.
