@@ -1,5 +1,8 @@
 ## Changelog
 
+### 0.3.8 (2021-05-17)
+- Use datetime index of exogenous and endogenous variables. 
+
 ### 0.3.7 (2021-03-09)
 - Remove upper constraint on `pandas` version.
 
