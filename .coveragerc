@@ -1,0 +1,9 @@
+[run]
+branch = True
+source = hcl_model
+omit = */__init__.py
+
+[paths]
+source =
+    src/
+    */site-packages/
