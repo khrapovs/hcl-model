@@ -1,9 +1,11 @@
 import functools
+from typing import Dict, Callable
 
 import numpy as np
 import pandas as pd
 from statsmodels.tsa.tsatools import add_trend
 
+from hcl_model.calendar_transformer import CalendarTransformer
 from hcl_model.model_hcl_generic import HandCraftedLinearModel
 from tests.test_model_common import TestModelCommon
 
@@ -34,6 +36,8 @@ class TestHCL(TestModelCommon):
         assert isinstance(forecast, pd.DataFrame)
         assert forecast.shape[0] == num_steps
         assert forecast.columns[0] == lbl_value
+        assert forecast.index.name == self.lbl_date
+        assert isinstance(forecast.index, pd.DatetimeIndex)
 
     def test_model_simulation(self):
         endog, exog = self.generate_data()
@@ -42,12 +46,12 @@ class TestHCL(TestModelCommon):
         num_simulations = 5
 
         model.fit(endog=endog.loc[endog.index[:-num_steps], "value"], exog=exog)
-        simulations = model.simulate(
-            num_steps=num_steps, num_simulations=num_simulations
-        )
+        simulations = model.simulate(num_steps=num_steps, num_simulations=num_simulations)
 
         assert isinstance(simulations, pd.DataFrame)
         assert simulations.shape == (num_steps, num_simulations)
+        assert simulations.index.name == self.lbl_date
+        assert isinstance(simulations.index, pd.DatetimeIndex)
 
     def test_model_percentiles(self):
         endog, exog = self.generate_data()
@@ -67,6 +71,8 @@ class TestHCL(TestModelCommon):
         assert isinstance(forecast, pd.DataFrame)
         assert forecast.shape == (num_steps, len(quantile_levels) + 1)
         assert forecast.columns[0] == lbl_value
+        assert forecast.index.name == self.lbl_date
+        assert isinstance(forecast.index, pd.DatetimeIndex)
 
     def test_model_summary(self):
         endog, exog = self.generate_data()
@@ -87,36 +93,36 @@ class TestHCL(TestModelCommon):
 
 
 class TestHCLTransforms:
-    @staticmethod
-    def generate_input():
+    lbl_date = "date"
+
+    def generate_input(self) -> pd.DataFrame:
         nobs = 30
         endog = pd.Series(
             np.arange(1, nobs + 1) + np.random.normal(size=nobs, scale=1e-1),
             name="value",
-            index=pd.date_range("2019-01-01", periods=nobs, freq="W-FRI", name="date"),
+            index=pd.date_range("2019-01-01", periods=nobs, freq="W-FRI", name=self.lbl_date),
         )
-
         data = endog.to_frame()
         data["x2"] = np.random.normal(size=nobs)
         data["x3"] = np.random.normal(size=nobs)
+        return data
 
-        f = {
+    @staticmethod
+    def _get_exog_transform() -> Dict[str, Callable]:
+        return {"const": lambda x: x + 10, "trend": lambda x: -x.shift(2)}
+
+    @staticmethod
+    def _get_endog_transform() -> Dict[str, Callable]:
+        return {
             "lag1": lambda y: y.shift(1),
             "local_mean": lambda y: y.shift(1).ewm(span=5).mean(),
         }
-
-        g = {"const": lambda x: x + 10, "trend": lambda x: -x.shift(2)}
-
-        return data, f, g
 
     def test_transform_lags(self):
         lags = [1, 2, 10]
         col_name = "lag_{}"
 
-        f = {
-            col_name.format(lag): functools.partial(lambda lag, y: y.shift(lag), lag)
-            for lag in lags
-        }
+        f = {col_name.format(lag): functools.partial(lambda lag, y: y.shift(lag), lag) for lag in lags}
         model = HandCraftedLinearModel(endog_transform=f)
         endog = pd.Series(np.arange(5))
 
@@ -127,7 +133,9 @@ class TestHCLTransforms:
             pd.testing.assert_series_equal(val, transformed_expected[key])
 
     def test_transform_data(self):
-        data, f, g = self.generate_input()
+        data = self.generate_input()
+        f = self._get_endog_transform()
+        g = self._get_exog_transform()
 
         model = HandCraftedLinearModel(endog_transform=f, exog_transform=g)
         endog = data["value"]
@@ -155,16 +163,16 @@ class TestHCLTransforms:
             pd.testing.assert_frame_equal(val, transformed[key])
 
     def test_convert_transformed_dict_to_frame(self):
-        data, f, g = self.generate_input()
+        data = self.generate_input()
+        f = self._get_endog_transform()
+        g = self._get_exog_transform()
 
         model = HandCraftedLinearModel(endog_transform=f, exog_transform=g)
         endog = data["value"]
         exog = data.iloc[:, 1:]
 
         transformed = model._transform_all_data(exog=exog, endog=endog)
-        transformed_df = model._convert_transformed_dict_to_frame(
-            transformed=transformed
-        )
+        transformed_df = model._convert_transformed_dict_to_frame(transformed=transformed)
 
         keys = set(f.keys())
         for key in g.keys():
@@ -173,7 +181,9 @@ class TestHCLTransforms:
         assert set(transformed_df.columns) == keys
 
     def test_model_fit(self):
-        data, f, g = self.generate_input()
+        data = self.generate_input()
+        f = self._get_endog_transform()
+        g = self._get_exog_transform()
         endog = data["value"]
         exog = data.iloc[:, 1:]
 
@@ -192,7 +202,9 @@ class TestHCLTransforms:
         assert set(model.summary()[model.lbl_params].keys()) == keys
 
     def test_model_prediction(self):
-        data, f, g = self.generate_input()
+        data = self.generate_input()
+        f = self._get_endog_transform()
+        g = self._get_exog_transform()
 
         num_steps = 5
         model = HandCraftedLinearModel(endog_transform=f, exog_transform=g)
@@ -207,9 +219,13 @@ class TestHCLTransforms:
         assert forecast.shape[0] == num_steps
         assert forecast.columns[0] == "value"
         assert forecast.isna().sum().sum() == 0
+        assert forecast.index.name == self.lbl_date
+        assert isinstance(forecast.index, pd.DatetimeIndex)
 
     def test_model_percentiles(self):
-        data, f, g = self.generate_input()
+        data = self.generate_input()
+        f = self._get_endog_transform()
+        g = self._get_exog_transform()
 
         num_steps = 5
         num_simulations = 5
@@ -231,16 +247,45 @@ class TestHCLTransforms:
         assert forecast.shape == (num_steps, len(quantile_levels) + 1)
         assert forecast.columns[0] == "value"
         assert forecast.isna().sum().sum() == 0
+        assert forecast.index.name == self.lbl_date
+        assert isinstance(forecast.index, pd.DatetimeIndex)
+
+    def test_with_calendar_transform(self):
+        data = self.generate_input()
+        f = self._get_endog_transform()
+        degrees_of_freedom = 4
+        g = {
+            f"spline{deg}": lambda df: CalendarTransformer()
+            .add_periodic_splines(df=df, degrees_of_freedom=degrees_of_freedom)
+            .iloc[:, [deg]]
+            for deg in range(degrees_of_freedom)
+        }
+        num_steps = 5
+        model = HandCraftedLinearModel(endog_transform=f, exog_transform=g)
+        model.fit(
+            endog=data.loc[data.index[:-num_steps], "value"],
+            exog=data.iloc[:-num_steps, 1:],
+        )
+
+        forecast = model.predict(exog=data.iloc[:, 1:], num_steps=num_steps)
+
+        assert isinstance(forecast, pd.DataFrame)
+        assert forecast.shape[0] == num_steps
+        assert forecast.columns[0] == "value"
+        assert forecast.isna().sum().sum() == 0
+        assert forecast.index.name == self.lbl_date
+        assert isinstance(forecast.index, pd.DatetimeIndex)
 
 
 class TestHCLWeightedTransforms:
-    @staticmethod
-    def generate_input():
+    lbl_date = "date"
+
+    def generate_input(self):
         nobs = 30
         endog = pd.Series(
             np.arange(1, nobs + 1) + np.random.normal(size=nobs, scale=1e-1),
             name="value",
-            index=pd.date_range("2019-01-01", periods=nobs, freq="W-FRI", name="date"),
+            index=pd.date_range("2019-01-01", periods=nobs, freq="W-FRI", name=self.lbl_date),
         )
 
         data = add_trend(endog, trend="ct")
@@ -294,3 +339,5 @@ class TestHCLWeightedTransforms:
         assert forecast.shape[0] == num_steps
         assert forecast.columns[0] == "value"
         assert forecast.isna().sum().sum() == 0
+        assert forecast.index.name == self.lbl_date
+        assert isinstance(forecast.index, pd.DatetimeIndex)

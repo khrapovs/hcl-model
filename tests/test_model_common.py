@@ -10,16 +10,13 @@ from hcl_model.model_sarimax import SARIMAXModel
 
 
 class TestModelCommon:
-    @staticmethod
-    def generate_data() -> Tuple[pd.DataFrame, pd.DataFrame]:
+    lbl_date = "date"
+
+    def generate_data(self) -> Tuple[pd.DataFrame, pd.DataFrame]:
         nobs = 30
-        index = pd.date_range("2019-01-01", periods=nobs, freq="W-FRI", name="date")
-        endog = pd.DataFrame(
-            {"value": np.arange(1, nobs + 1) + np.random.normal(size=nobs)}, index=index
-        )
-        exog = pd.DataFrame(
-            {"const": np.ones(nobs), "time": np.arange(1, nobs + 1)}, index=index
-        )
+        index = pd.date_range("2019-01-01", periods=nobs, freq="W-FRI", name=self.lbl_date)
+        endog = pd.DataFrame({"value": np.arange(1, nobs + 1) + np.random.normal(size=nobs)}, index=index)
+        exog = pd.DataFrame({"const": np.ones(nobs), "time": np.arange(1, nobs + 1)}, index=index)
         return endog, exog
 
     @abstractmethod
@@ -53,14 +50,14 @@ class TestPredictionsSanity:
         endog = data.iloc[:-num_steps]
         exog = add_trend(data, trend="c", has_constant="add").drop(lbl_value, axis=1)
 
-        expected_forecast = pd.DataFrame(
-            {lbl_value: endog.mean()}, index=pd.Index(np.arange(nobs - num_steps, nobs))
-        )
+        expected_forecast = pd.DataFrame({lbl_value: endog.mean()}, index=index[-num_steps:])
 
         model = SARIMAXModel(trend="c")
+        model.fit(endog=endog)
         forecast_sarimax = model.predict(endog=endog, num_steps=num_steps)
 
         model = HandCraftedLinearModel()
+        model.fit(endog=endog, exog=exog)
         forecast_hcl = model.predict(endog=endog, exog=exog, num_steps=num_steps)
 
         pd.testing.assert_frame_equal(forecast_sarimax, expected_forecast)
@@ -71,15 +68,13 @@ class TestPredictionsSanity:
         num_steps = 10
         lbl_value = "value"
         index = pd.date_range("2019-01-01", periods=nobs, freq="W-FRI", name="date")
-        data = pd.Series(
-            np.arange(1, nobs + 1), index=index, name=lbl_value, dtype=float
-        )
+        data = pd.Series(np.arange(1, nobs + 1), index=index, name=lbl_value, dtype=float)
         endog = data.iloc[:-num_steps]
         exog = add_trend(data, trend="ct", has_constant="add").drop(lbl_value, axis=1)
 
         expected_forecast = pd.DataFrame(
             {lbl_value: data.iloc[-num_steps:].values},
-            index=pd.Index(np.arange(nobs - num_steps, nobs)),
+            index=index[-num_steps:],
         )
 
         model = SARIMAXModel(trend="ct")
@@ -98,9 +93,7 @@ class TestPredictionsSanity:
         num_steps = 10
         lbl_value = "value"
         index = pd.date_range("2019-01-01", periods=nobs, freq="W-FRI", name="date")
-        data = pd.Series(
-            np.arange(1, nobs + 1), index=index, name=lbl_value, dtype=float
-        )
+        data = pd.Series(np.arange(1, nobs + 1), index=index, name=lbl_value, dtype=float)
         endog = data.iloc[:-num_steps]
         exog = add_trend(data, trend="c", has_constant="add").drop(lbl_value, axis=1)
         endog_transform = {"lag1": lambda y: y.shift(1)}
@@ -120,9 +113,7 @@ class TestPredictionsSanity:
         num_steps = 10
         lbl_value = "value"
         index = pd.date_range("2019-01-01", periods=nobs, freq="W-FRI", name="date")
-        data = pd.Series(
-            np.arange(1, nobs + 1), index=index, name=lbl_value, dtype=float
-        )
+        data = pd.Series(np.arange(1, nobs + 1), index=index, name=lbl_value, dtype=float)
         endog = data.iloc[:-num_steps]
         exog = add_trend(data, trend="ct", has_constant="add").drop(lbl_value, axis=1)
         endog_transform = {"lag1": lambda y: y.shift(1)}

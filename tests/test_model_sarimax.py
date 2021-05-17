@@ -67,6 +67,8 @@ class TestSARIMAX(TestModelCommon):
         assert isinstance(forecast, pd.DataFrame)
         assert forecast.shape[0] == num_steps
         assert forecast.columns[0] == lbl_value
+        assert forecast.index.name == self.lbl_date
+        assert isinstance(forecast.index, pd.DatetimeIndex)
 
     def test_model_simulation(self):
 
@@ -76,13 +78,12 @@ class TestSARIMAX(TestModelCommon):
         num_simulations = 5
 
         model.fit(endog=endog.loc[endog.index[:-num_steps], "value"], exog=exog)
-        simulations = model.simulate(
-            num_steps=num_steps, num_simulations=num_simulations
-        )
+        simulations = model.simulate(num_steps=num_steps, num_simulations=num_simulations)
 
-        # print(simulations)
         assert isinstance(simulations, pd.DataFrame)
         assert simulations.shape == (num_steps, num_simulations)
+        assert simulations.index.name == self.lbl_date
+        assert isinstance(simulations.index, pd.DatetimeIndex)
 
     def test_model_percentiles(self):
         endog, exog = self.generate_data()
@@ -102,6 +103,8 @@ class TestSARIMAX(TestModelCommon):
         assert isinstance(forecast, pd.DataFrame)
         assert forecast.shape == (num_steps, len(quantile_levels) + 1)
         assert forecast.columns[0] == lbl_value
+        assert forecast.index.name == self.lbl_date
+        assert isinstance(forecast.index, pd.DatetimeIndex)
 
     def test_model_summary(self):
         endog, exog = self.generate_data()
