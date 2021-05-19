@@ -1,5 +1,8 @@
 ## Changelog
 
+### 0.3.9 (2021-05-19)
+- Allow passing arbitrary transformations to `HandCraftedLinearModel` that return multi-column dataframes.
+
 ### 0.3.8 (2021-05-17)
 - Use datetime index of exogenous and endogenous variables. 
 

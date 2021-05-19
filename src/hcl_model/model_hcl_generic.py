@@ -1,4 +1,4 @@
-from typing import List, Union, Sequence, Dict, Callable
+from typing import List, Union, Sequence, Dict, Callable, Optional
 
 import numpy as np
 import pandas as pd
@@ -62,8 +62,8 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
 
     def __init__(
         self,
-        endog_transform: Dict[str, Callable] = None,
-        exog_transform: Dict[str, Callable] = None,
+        endog_transform: Optional[Dict[str, Callable]] = None,
+        exog_transform: Optional[Dict[str, Callable]] = None,
     ):
         super().__init__()
         if endog_transform is None:
@@ -204,11 +204,7 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
         :param transform: dictionary with transformation functions
         :return: dictionary with the same keys as in transform dictionary
         """
-        transformed = dict()
-        if (transform is not None) & (data is not None):
-            for col_name, single_transform in transform.items():
-                transformed[col_name] = data.transform(single_transform)
-        return transformed
+        return {key: fun(data) for key, fun in transform.items() if data is not None}
 
     def _transform_all_data(
         self, endog: Union[pd.Series, pd.DataFrame] = None, exog: pd.DataFrame = None
