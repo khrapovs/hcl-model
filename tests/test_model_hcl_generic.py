@@ -254,18 +254,20 @@ class TestHCLTransforms:
         data = self.generate_input()
         f = self._get_endog_transform()
         degrees_of_freedom = 4
+        lbl_splines = "splines"
+        lbl_squared = "squared"
         g = {
-            f"spline{deg}": lambda df: CalendarTransformer()
-            .add_periodic_splines(df=df, degrees_of_freedom=degrees_of_freedom)
-            .iloc[:, [deg]]
-            for deg in range(degrees_of_freedom)
+            lbl_splines: lambda df: CalendarTransformer().add_periodic_splines(
+                df=df, degrees_of_freedom=degrees_of_freedom
+            ),
+            lbl_squared: lambda df: df ** 2,
         }
         num_steps = 5
         model = HandCraftedLinearModel(endog_transform=f, exog_transform=g)
-        model.fit(
-            endog=data.loc[data.index[:-num_steps], "value"],
-            exog=data.iloc[:-num_steps, 1:],
-        )
+        exog = data.iloc[:-num_steps, 1:]
+        transformed = model._transform_data(data=exog, transform=g)
+        transformed_df = model._convert_transformed_dict_to_frame(transformed=transformed)
+        model.fit(endog=data.loc[data.index[:-num_steps], "value"], exog=exog)
 
         forecast = model.predict(exog=data.iloc[:, 1:], num_steps=num_steps)
 
@@ -275,6 +277,10 @@ class TestHCLTransforms:
         assert forecast.isna().sum().sum() == 0
         assert forecast.index.name == self.lbl_date
         assert isinstance(forecast.index, pd.DatetimeIndex)
+        assert {lbl_splines, lbl_squared} == set(transformed.keys())
+        assert len(transformed[lbl_splines].columns) == exog.shape[1] + degrees_of_freedom
+        assert len(transformed[lbl_squared].columns) == exog.shape[1]
+        assert len(transformed_df.columns) == 2 * exog.shape[1] + degrees_of_freedom
 
 
 class TestHCLWeightedTransforms:
