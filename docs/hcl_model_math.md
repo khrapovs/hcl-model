@@ -42,9 +42,11 @@ Model parameters, $\beta_m$ are $\gamma_m$ estimated using standard OLS. Varianc
 ## Forecasting
 
 In general, the forecast is computed from the following recursion:
+
 $$
 Y^f_{T+h}=f\left(Y^f_{T-m+h,L}\right)\hat{\gamma}_m^\prime+g\left(X^f_{T+h}\right)\hat{\beta}_m^\prime,\quad m,h\geq1.
 $$
+
 Note that $Y^f_{T-m+h,L}=\left[Y^f_{T-m+h-s_1},\ldots,Y^f_{T-m+h-s_p}\right]$ which means $Y^f_{T-m+h-s_i}=Y_{T-m+h-s_i}$ is observed if $h\leq m+s_i$, otherwise it has to be computed using the forecasting recursion. Exogenous forecast $X^f_{T+h}$ has to be obtained from a separate model.
 
 ## Prediction Intervals
@@ -53,12 +55,13 @@ The goal is, given $\alpha\in[0,1]$, to provide an interval $C(h,m,\alpha)=\left
 
 1. Simulate $\left\{\varepsilon_{T+i}^{(s)}\right\}_{s=1,i=1}^{S,h}$ from $N(0,\hat{\sigma}_m)$, where $S$ is the number of simulations. For each $s\in S$ simulate the vector of parameters $\left\{\left[\beta^{(s)}_m,\gamma^{(s)}_m\right]\right\}_{s=1}^S$ from estimated asymptotic distribution $N\left(\left[\hat{\beta}_m,\hat{\gamma}_m\right],\hat{V}\left[\hat{\beta}_m,\hat{\gamma}_m\right]\right)$.
 
-1. Given parameter and innovations simulations, produce $S$ samples of $h$ horizon realizations $\left\{Y_{T+h}^{f(s)}\right\}_{s=1}^S$ iteratively:
-$$
-Y_{T+h}^{(s)}=f\left(Y_{T-m+h,L}^{(s)}\right)\hat{\gamma}_m^{(s)\prime}+g\left(X^{(s)}_{T+h}\right)\hat{\beta}_m^{(s)\prime}+\varepsilon^{(s)}_{T+h}.
-$$
+2. Given parameter and innovations simulations, produce $S$ samples of $h$ horizon realizations $\left\{Y_{T+h}^{f(s)}\right\}_{s=1}^S$ iteratively:
 
-1. Compute empirical quantiles $\hat{c}_d$ and $\hat{c}_u$ of $\left\{Y_{T+h}^{f(s)}\right\}_{s=1}^S$.
+    $$
+    Y_{T+h}^{(s)}=f\left(Y_{T-m+h,L}^{(s)}\right)\hat{\gamma}_m^{(s)\prime}+g\left(X^{(s)}_{T+h}\right)\hat{\beta}_m^{(s)\prime}+\varepsilon^{(s)}_{T+h}.
+    $$
+
+4. Compute empirical quantiles $\hat{c}_d$ and $\hat{c}_u$ of $\left\{Y_{T+h}^{f(s)}\right\}_{s=1}^S$.
 
 ## Model Mixing
 
@@ -67,9 +70,11 @@ $$
 Y_{t+h}^f=\alpha_hY_{t+h}^{f1}+(1-\alpha_h)Y_{t+h}^{f2},
 $$
 where $f1$ marks short term forecast and $f2$ marks long term forecast. $\alpha_h$ is a time dependent weighting function. It is natural to require that $\alpha_1=1$, and $\alpha_H=0$, where 1 and $H$ are extreme short and long term, respectively. In between, we may use, for example, a logistic function:
+
 $$
 \alpha_h=1 - \frac{1}{1+\exp\left\{-a(h-H/2)\right\}},
 $$
+
 where $a$ is a nuisance parameter that stretches the logistic function appropriately. Ideally, this parameter should be chosen to minimize cross-validation MAPE.
 
 ## Model Components

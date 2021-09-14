@@ -7,9 +7,6 @@ nav:
   - Home: index.md
   - Math: hcl_model_math.md
 
-plugins:
-  - search
-
 markdown_extensions:
   - pymdownx.arithmatex:
       generic: true

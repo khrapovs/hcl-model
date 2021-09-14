@@ -5,8 +5,6 @@ stages:
   - publish_package_and_docs
 
 variables:
-  NEXUS_REPOSITORY: "nexus.signintra.com/repository/GDSA-PyPi"
-  NEXUS_STATIC: "nexus.signintra.com/repository/GDSA-static"
   PACKAGE_NAME: "hcl-model"
 
 Tests:
@@ -33,7 +31,7 @@ Build and Push Python Wheel:
     - pip install .[deploy]
     - python -m build
   script:
-    - twine upload -u ${NEXUS_USER} -p ${NEXUS_PASSWORD} --repository-url https://${NEXUS_REPOSITORY}/ dist/*
+    - twine upload -u ${NEXUS_LOGIN} -p ${NEXUS_PASSWORD} --repository-url ${NEXUS_PYPI}/ dist/*
   only:
     refs:
       - tags
@@ -42,8 +40,8 @@ Push static documentation:
   stage: publish_package_and_docs
   script:
     - cd site
-    - find . -type f -exec curl -u ${NEXUS_USER}:${NEXUS_PASSWORD}
-      --ftp-create-dirs -T {} https://${NEXUS_STATIC}/packages/${PACKAGE_NAME}/docs/{} \;
+    - find . -type f -exec curl -u ${NEXUS_LOGIN}:${NEXUS_PASSWORD}
+      --ftp-create-dirs -T {} ${NEXUS_STATIC}/packages/${PACKAGE_NAME}/docs/{} \;
   only:
     refs:
       - tags
