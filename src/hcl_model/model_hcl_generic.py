@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Union, Sequence, Dict, Callable
+from typing import List, Union, Sequence, Dict, Callable, Optional
 
 import numpy as np
 import pandas as pd
@@ -64,14 +64,8 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
 
     def __init__(self, endog_transform: Dict[str, Callable] = None, exog_transform: Dict[str, Callable] = None) -> None:
         super().__init__()
-        if endog_transform is None:
-            self._endog_transform = {self.lbl_original_endog: lambda x: x}
-        else:
-            self._endog_transform = endog_transform
-        if exog_transform is None:
-            self._exog_transform = {self.lbl_original_exog: lambda x: x}
-        else:
-            self._exog_transform = exog_transform
+        self._endog_transform = self._init_transform(name=self.lbl_original_endog, transform=endog_transform)
+        self._exog_transform = self._init_transform(name=self.lbl_original_exog, transform=exog_transform)
 
     def _fit(self, y: pd.Series, X: pd.DataFrame = None, weights: Union[Sequence, float] = 1.0) -> None:
         transformed = self._transform_all_data(endog=self._y_train, exog=self._x_train)
@@ -214,3 +208,7 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
             return pd.concat(out, axis=1)
         else:
             return pd.DataFrame()
+
+    @staticmethod
+    def _init_transform(name: str, transform: Dict[str, Callable] = None) -> Optional[Dict[str, Callable]]:
+        return {name: lambda x: x} if transform is None else transform
