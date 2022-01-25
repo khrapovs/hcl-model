@@ -75,7 +75,7 @@ class SARIMAXModel(TimeSeriesModelArchetype):
             seasonal_order=self._seasonal_order,
             enforce_stationarity=self._enforce_stationarity,
         )
-        sim_model = sim_model.filter(self._fit_results.params)
+        sim_model = sim_model.filter(params=self._fit_results.params)
 
         # TODO: check simulation output for different model. I am not sure it is correct without initial_sate.
         simulation = {i: sim_model.simulate(num_steps) for i in range(num_simulations)}
