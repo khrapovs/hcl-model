@@ -53,6 +53,7 @@ class TimeSeriesModelArchetype(ABC):
         :param X: exogenous variables should cover the whole prediction horizon
         :param quantile_levels: list of desired prediction interval levels between 0 and 100 (in percentages).
             If not provided, no confidence interval will be given as output
+        :param num_simulations: number of simulations for simulation-based prediction intervals
         :returns: A DataFrame containing values and prediction intervals.
 
         Example of output from `num_steps=2` and `quantile_levels=[5, 95]`:
