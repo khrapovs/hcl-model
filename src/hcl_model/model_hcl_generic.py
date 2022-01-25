@@ -78,7 +78,7 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
         rhs_vars = self._convert_transformed_dict_to_frame(transformed=transformed)
         self._fit_results = WLS(endog=self._y_train, exog=rhs_vars, weights=weights, missing="drop").fit()
 
-    def predict(
+    def _predict(
         self,
         num_steps: int,
         X: pd.DataFrame = None,
@@ -87,8 +87,6 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
         num_simulations: int = None,
         **kwargs
     ) -> pd.DataFrame:
-        if X is not None:
-            self._x_train = pd.concat([self._x_train, X])
         nobs = self._get_num_observations(self._y_train)
         self._check_exogenous(exog=self._x_train, nobs=nobs, num_steps=num_steps)
         endog_updated = pd.concat(

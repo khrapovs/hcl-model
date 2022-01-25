@@ -36,14 +36,8 @@ class TimeSeriesModelArchetype(ABC):
 
     @abstractmethod
     def _fit(self, y: pd.Series, X: pd.DataFrame = None, **kwargs) -> None:
-        """
-        Fit the model using some provided training data.
+        pass
 
-        :param y: endogenous variable
-        :param X: exogenous explanatory variables
-        """
-
-    @abstractmethod
     def predict(
         self, num_steps: int, X: pd.DataFrame = None, quantile_levels: List[float] = None, **kwargs
     ) -> pd.DataFrame:
@@ -64,6 +58,15 @@ class TimeSeriesModelArchetype(ABC):
             2019-06-07   102      75     127
             2019-06-14   305     206     278
         """
+        if X is not None:
+            self._x_train = pd.concat([self._x_train, X])
+        return self._predict(num_steps=num_steps, X=X, quantile_levels=quantile_levels, **kwargs)
+
+    @abstractmethod
+    def _predict(
+        self, num_steps: int, X: pd.DataFrame = None, quantile_levels: List[float] = None, **kwargs
+    ) -> pd.DataFrame:
+        pass
 
     @abstractmethod
     def simulate(
