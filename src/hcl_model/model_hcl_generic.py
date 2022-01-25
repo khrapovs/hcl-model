@@ -84,14 +84,13 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
     def predict(
         self,
         num_steps: int,
-        y: pd.Series = None,
         X: pd.DataFrame = None,
         weights: Union[Sequence, float] = 1.0,
         quantile_levels: List[float] = None,
         num_simulations: int = None,
         **kwargs
     ) -> pd.DataFrame:
-        self._endog, self._exog = self._prepare_data(endog=y, exog=X)
+        self._exog = self._prepare_exog(exog=X)
         nobs = self._get_num_observations(self._endog)
         self._check_exogenous(exog=X, nobs=nobs, num_steps=num_steps)
         endog_updated = pd.concat(

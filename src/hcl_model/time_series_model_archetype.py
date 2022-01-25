@@ -33,13 +33,12 @@ class TimeSeriesModelArchetype(ABC):
 
     @abstractmethod
     def predict(
-        self, num_steps: int, y: pd.Series = None, X: pd.DataFrame = None, quantile_levels: List[float] = None, **kwargs
+        self, num_steps: int, X: pd.DataFrame = None, quantile_levels: List[float] = None, **kwargs
     ) -> pd.DataFrame:
         """
         Forecast the values and prediction intervals
 
         :param num_steps: number of point in the future that we want to forecast
-        :param y: endogenous variables, if not provided the model should use the data provided into the fit() method
         :param X: exogenous variables should cover the whole prediction horizon
         :param quantile_levels: list of desired prediction interval levels between 0 and 100 (in percentages).
             If not provided, no confidence interval will be given as output
