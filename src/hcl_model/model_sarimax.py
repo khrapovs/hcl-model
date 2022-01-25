@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from typing import List
 
 import pandas as pd
@@ -31,11 +32,11 @@ class SARIMAXModel(TimeSeriesModelArchetype):
         self._seasonal_order = seasonal_order
         self._trend = trend
         self._enforce_stationarity = enforce_stationarity
-        self._x_train = None
         self._trend_fit = None
 
     def fit(self, y: pd.Series, X: pd.DataFrame = None, **kwargs) -> SARIMAXModel:
-        self._y_train, self._x_train = self._prepare_data(endog=y, exog=X)
+        self._y_train = y.copy()
+        self._x_train = X.copy() if X is not None else None
         self._y_train = self._remove_trend(self._y_train)
         self._fit_results = SARIMAX(
             self._y_train,

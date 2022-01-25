@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Tuple, Union
+from typing import List, Union
 
 import numpy as np
 import pandas as pd
@@ -157,21 +157,6 @@ class TimeSeriesModelArchetype(ABC):
         quantiles = simulations.quantile(np.array(quantile_levels) / 100, axis=1).T
         quantiles.columns = self.get_quantile_names(quantile_levels)
         return quantiles
-
-    def _prepare_data(self, endog: pd.Series = None, exog: pd.DataFrame = None) -> Tuple[pd.Series, pd.DataFrame]:
-        return self._prepare_endog(endog=endog), self._prepare_exog(exog=exog)
-
-    def _prepare_endog(self, endog: pd.Series = None) -> pd.Series:
-        if endog is not None:
-            return endog.copy()
-        else:
-            return self._y_train
-
-    def _prepare_exog(self, exog: pd.DataFrame = None) -> pd.DataFrame:
-        if exog is not None:
-            return exog.copy()
-        else:
-            return self._x_train
 
     @staticmethod
     def _check_exogenous(exog: pd.DataFrame, nobs: int, num_steps: int) -> None:
