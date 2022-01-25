@@ -95,13 +95,13 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
 
         if quantile_levels is not None:
             quantiles = self._compute_prediction_quantiles(
-                num_steps=num_steps, num_simulations=num_simulations, quantile_levels=quantile_levels
+                num_steps=num_steps, num_simulations=num_simulations, quantile_levels=quantile_levels, X=X
             )
             predictions = pd.concat([predictions, quantiles], axis=1)
 
         return predictions
 
-    def _simulate(self, num_steps: int, num_simulations: int, **kwargs) -> pd.DataFrame:
+    def _simulate(self, num_steps: int, num_simulations: int, X: pd.DataFrame = None, **kwargs) -> pd.DataFrame:
         num_params = self._get_parameters().shape[0]
         simulation = np.empty((num_steps, num_simulations))
 
@@ -144,10 +144,10 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
             # update out-of-sample endogenous series with simulated value
             endog_updated.loc[self._nobs + j] = simulation[j]
 
-        return pd.DataFrame(simulation, index=self._x_train.index[self._nobs :])
+        return pd.DataFrame(simulation, index=X.index)
 
     def _compute_prediction_quantiles(
-        self, num_steps: int, num_simulations: int, quantile_levels: List[float] = None
+        self, num_steps: int, num_simulations: int, quantile_levels: List[float] = None, X: pd.DataFrame = None
     ) -> pd.DataFrame:
         """Compute prediction percentiles from simulations.
 
@@ -156,7 +156,7 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
         :param quantile_levels: quantile levels
         :return: quantiles
         """
-        simulations = self.simulate(num_steps=num_steps, num_simulations=num_simulations)
+        simulations = self.simulate(num_steps=num_steps, num_simulations=num_simulations, X=X)
         quantiles = simulations.quantile(np.array(quantile_levels) / 100, axis=1).T
         quantiles.columns = self.get_quantile_names(quantile_levels)
         return quantiles
