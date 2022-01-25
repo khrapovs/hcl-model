@@ -141,13 +141,6 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
     def _compute_prediction_quantiles(
         self, num_steps: int, num_simulations: int = None, quantile_levels: List[float] = None, X: pd.DataFrame = None
     ) -> pd.DataFrame:
-        """Compute prediction percentiles from simulations.
-
-        :param num_steps: number of points in the future that we want to simulate
-        :param num_simulations: number of independent simulations
-        :param quantile_levels: quantile levels
-        :return: quantiles
-        """
         simulations = self.simulate(num_steps=num_steps, num_simulations=num_simulations, X=X)
         quantiles = simulations.quantile(np.array(quantile_levels) / 100, axis=1).T
         quantiles.columns = self.get_quantile_names(quantile_levels)
