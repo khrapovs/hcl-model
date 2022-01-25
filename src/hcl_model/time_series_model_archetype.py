@@ -89,9 +89,8 @@ class TimeSeriesModelArchetype(ABC):
         :param X: exogenous variables
         :return: A DataFrame containing simulations
         """
-        if X is not None:
-            self._x_train = pd.concat([self._x_train, X])
-        self._check_exogenous(exog=self._x_train, nobs=self._nobs, num_steps=num_steps)
+        x_train_and_test = pd.concat([self._x_train, X]) if X is not None else self._x_train
+        self._check_exogenous(exog=x_train_and_test, nobs=self._nobs, num_steps=num_steps)
         return self._simulate(num_steps=num_steps, num_simulations=num_simulations, X=X, **kwargs)
 
     @abstractmethod
