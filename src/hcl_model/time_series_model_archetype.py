@@ -63,8 +63,7 @@ class TimeSeriesModelArchetype(ABC):
             2019-06-07   102      75     127
             2019-06-14   305     206     278
         """
-        x_train_and_test = pd.concat([self._x_train, X]) if X is not None else self._x_train
-        self._check_exogenous(exog=x_train_and_test, nobs=self._nobs, num_steps=num_steps)
+        self._check_exogenous(exog=X, nobs=self._nobs, num_steps=num_steps)
         predictions = self._predict(num_steps=num_steps, X=X, quantile_levels=quantile_levels, **kwargs)
         if quantile_levels is not None:
             quantiles = self._compute_prediction_quantiles(
@@ -88,8 +87,7 @@ class TimeSeriesModelArchetype(ABC):
         :param X: exogenous variables
         :return: A DataFrame containing simulations
         """
-        x_train_and_test = pd.concat([self._x_train, X]) if X is not None else self._x_train
-        self._check_exogenous(exog=x_train_and_test, nobs=self._nobs, num_steps=num_steps)
+        self._check_exogenous(exog=X, nobs=self._nobs, num_steps=num_steps)
         return self._simulate(num_steps=num_steps, num_simulations=num_simulations, X=X, **kwargs)
 
     @abstractmethod
@@ -178,15 +176,16 @@ class TimeSeriesModelArchetype(ABC):
     def _get_residual_kurtosis(self) -> float:
         return self._get_residual_moment(degree=4, center_first=True) / (self._get_residual_std() ** 4)
 
-    @staticmethod
-    def _check_exogenous(exog: pd.DataFrame, nobs: int, num_steps: int) -> None:
+    def _check_exogenous(self, nobs: int, num_steps: int, exog: pd.DataFrame = None) -> None:
         """Check that provided exogenous data cover prediction horizon.
 
         :param nobs: the number of observations
         :param num_steps: the number of steps in the future we want to make forecast of
+        :param exog: exogenous data
         :raise RuntimeError:
         """
-        if exog is not None and exog.shape[0] < nobs + num_steps:
+        x_train_and_test = pd.concat([self._x_train, exog]) if exog is not None else self._x_train
+        if x_train_and_test is not None and x_train_and_test.shape[0] < nobs + num_steps:
             raise RuntimeError("Provided exogenous data does not cover the whole prediction horizon!")
 
     def _get_endog_name(self) -> str:
