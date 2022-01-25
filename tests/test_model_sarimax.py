@@ -10,7 +10,7 @@ class TestSARIMAX(TestModelCommon):
         endog, exog = self.generate_data()
 
         model = SARIMAXModel(trend="n")
-        model.fit(endog=endog["value"])
+        model.fit(y=endog["value"])
         parameters = model._get_parameters()
 
         assert list(parameters.index) == ["sigma2"]
@@ -18,7 +18,7 @@ class TestSARIMAX(TestModelCommon):
         assert set(model.summary()[model.lbl_params].keys()) == {"sigma2"}
 
         model = SARIMAXModel(trend="c")
-        model.fit(endog=endog["value"])
+        model.fit(y=endog["value"])
         parameters = model._get_parameters()
 
         assert list(parameters.index) == ["sigma2"]
@@ -27,7 +27,7 @@ class TestSARIMAX(TestModelCommon):
         assert set(model.summary()[model.lbl_params].keys()) == {"sigma2"}
 
         model = SARIMAXModel(trend="ct")
-        model.fit(endog=endog["value"])
+        model.fit(y=endog["value"])
         parameters = model._get_parameters()
 
         assert list(parameters.index) == ["sigma2"]
@@ -35,7 +35,7 @@ class TestSARIMAX(TestModelCommon):
         assert set(model.summary()[model.lbl_params].keys()) == {"sigma2"}
 
         model = SARIMAXModel(trend="t")
-        model.fit(endog=endog["value"])
+        model.fit(y=endog["value"])
         parameters = model._get_parameters()
 
         assert list(parameters.index) == ["sigma2"]
@@ -43,7 +43,7 @@ class TestSARIMAX(TestModelCommon):
         assert set(model.summary()[model.lbl_params].keys()) == {"sigma2"}
 
         model = SARIMAXModel(trend="n")
-        model.fit(endog=endog["value"], exog=exog)
+        model.fit(y=endog["value"], X=exog)
         parameters = model._get_parameters()
 
         assert list(parameters.index) == ["const", "time", "sigma2"]
@@ -60,7 +60,7 @@ class TestSARIMAX(TestModelCommon):
         model = SARIMAXModel(trend="ct")
         num_steps = 10
         lbl_value = "value"
-        model.fit(endog=endog.loc[endog.index[:-num_steps], lbl_value], exog=exog)
+        model.fit(y=endog.loc[endog.index[:-num_steps], lbl_value], X=exog)
         forecast = model.predict(num_steps=num_steps)
 
         # print(forecast)
@@ -77,7 +77,7 @@ class TestSARIMAX(TestModelCommon):
         num_steps = 10
         num_simulations = 5
 
-        model.fit(endog=endog.loc[endog.index[:-num_steps], "value"], exog=exog)
+        model.fit(y=endog.loc[endog.index[:-num_steps], "value"], X=exog)
         simulations = model.simulate(num_steps=num_steps, num_simulations=num_simulations)
 
         assert isinstance(simulations, pd.DataFrame)
@@ -93,12 +93,8 @@ class TestSARIMAX(TestModelCommon):
         quantile_levels = [5, 95]
         lbl_value = "value"
 
-        model.fit(endog=endog.loc[endog.index[:-num_steps], lbl_value], exog=exog)
-        forecast = model.predict(
-            num_steps=num_steps,
-            quantile_levels=quantile_levels,
-            num_simulations=num_simulations,
-        )
+        model.fit(y=endog.loc[endog.index[:-num_steps], lbl_value], X=exog)
+        forecast = model.predict(num_steps=num_steps, quantile_levels=quantile_levels, num_simulations=num_simulations)
 
         assert isinstance(forecast, pd.DataFrame)
         assert forecast.shape == (num_steps, len(quantile_levels) + 1)
@@ -110,7 +106,7 @@ class TestSARIMAX(TestModelCommon):
         endog, exog = self.generate_data()
 
         model = SARIMAXModel(trend="n")
-        model.fit(endog=endog["value"])
+        model.fit(y=endog["value"])
 
         assert set(model.summary().index) >= {
             model.lbl_aic,

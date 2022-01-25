@@ -23,29 +23,24 @@ class TimeSeriesModelArchetype(metaclass=abc.ABCMeta):
         self._exog = pd.DataFrame()
 
     @abc.abstractmethod
-    def fit(self, endog: pd.Series, exog: pd.DataFrame = None, **kwargs):
+    def fit(self, y: pd.Series, exog: pd.DataFrame = None, **kwargs):
         """
         Fit the model using some provided training data.
 
-        :param endog: endogenous variable
+        :param y: endogenous variable
         :param exog: exogenous explanatory variables
         """
 
     @abc.abstractmethod
     def predict(
-        self,
-        num_steps: int,
-        endog: pd.Series = None,
-        exog: pd.DataFrame = None,
-        quantile_levels: List[float] = None,
-        **kwargs
+        self, num_steps: int, y: pd.Series = None, X: pd.DataFrame = None, quantile_levels: List[float] = None, **kwargs
     ) -> pd.DataFrame:
         """
         Forecast the values and prediction intervals
 
         :param num_steps: number of point in the future that we want to forecast
-        :param endog: endogenous variables, if not provided the model should use the data provided into the fit() method
-        :param exog: exogenous variables should cover the whole prediction horizon
+        :param y: endogenous variables, if not provided the model should use the data provided into the fit() method
+        :param X: exogenous variables should cover the whole prediction horizon
         :param quantile_levels: list of desired prediction interval levels between 0 and 100 (in percentages).
             If not provided, no confidence interval will be given as output
         :returns: A DataFrame containing values and prediction intervals.

@@ -53,12 +53,12 @@ class TestPredictionsSanity:
         expected_forecast = pd.DataFrame({lbl_value: endog.mean()}, index=index[-num_steps:])
 
         model = SARIMAXModel(trend="c")
-        model.fit(endog=endog)
-        forecast_sarimax = model.predict(endog=endog, num_steps=num_steps)
+        model.fit(y=endog)
+        forecast_sarimax = model.predict(num_steps=num_steps, y=endog)
 
         model = HandCraftedLinearModel()
-        model.fit(endog=endog, exog=exog)
-        forecast_hcl = model.predict(endog=endog, exog=exog, num_steps=num_steps)
+        model.fit(y=endog, X=exog)
+        forecast_hcl = model.predict(num_steps=num_steps, X=exog, y=endog)
 
         pd.testing.assert_frame_equal(forecast_sarimax, expected_forecast)
         pd.testing.assert_frame_equal(forecast_hcl, expected_forecast)
@@ -78,12 +78,12 @@ class TestPredictionsSanity:
         )
 
         model = SARIMAXModel(trend="ct")
-        model.fit(endog=endog)
-        forecast_sarimax = model.predict(endog=endog, num_steps=num_steps)
+        model.fit(y=endog)
+        forecast_sarimax = model.predict(num_steps=num_steps, y=endog)
 
         model = HandCraftedLinearModel()
-        model.fit(endog=endog, exog=exog)
-        forecast_hcl = model.predict(endog=endog, exog=exog, num_steps=num_steps)
+        model.fit(y=endog, X=exog)
+        forecast_hcl = model.predict(num_steps=num_steps, X=exog, y=endog)
 
         pd.testing.assert_frame_equal(forecast_sarimax, expected_forecast)
         pd.testing.assert_frame_equal(forecast_hcl, expected_forecast)
@@ -99,12 +99,12 @@ class TestPredictionsSanity:
         endog_transform = {"lag1": lambda y: y.shift(1)}
 
         model = SARIMAXModel(trend="n", order=(1, 0, 0), enforce_stationarity=False)
-        model.fit(endog=endog, exog=exog)
-        forecast_sarimax = model.predict(endog=endog, exog=exog, num_steps=num_steps)
+        model.fit(y=endog, X=exog)
+        forecast_sarimax = model.predict(num_steps=num_steps, X=exog, y=endog)
 
         model = HandCraftedLinearModel(endog_transform=endog_transform)
-        model.fit(endog=endog, exog=exog)
-        forecast_hcl = model.predict(endog=endog, exog=exog, num_steps=num_steps)
+        model.fit(y=endog, X=exog)
+        forecast_hcl = model.predict(num_steps=num_steps, X=exog, y=endog)
 
         pd.testing.assert_frame_equal(forecast_sarimax, forecast_hcl, rtol=1e-1)
 
@@ -119,11 +119,11 @@ class TestPredictionsSanity:
         endog_transform = {"lag1": lambda y: y.shift(1)}
 
         model = SARIMAXModel(trend="n", order=(1, 0, 0))
-        model.fit(endog=endog, exog=exog)
-        forecast_sarimax = model.predict(endog=endog, exog=exog, num_steps=num_steps)
+        model.fit(y=endog, X=exog)
+        forecast_sarimax = model.predict(num_steps=num_steps, X=exog, y=endog)
 
         model = HandCraftedLinearModel(endog_transform=endog_transform)
-        model.fit(endog=endog, exog=exog)
-        forecast_hcl = model.predict(endog=endog, exog=exog, num_steps=num_steps)
+        model.fit(y=endog, X=exog)
+        forecast_hcl = model.predict(num_steps=num_steps, X=exog, y=endog)
 
         pd.testing.assert_frame_equal(forecast_sarimax, forecast_hcl, rtol=1e-1)

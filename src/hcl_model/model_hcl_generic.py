@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import List, Union, Sequence, Dict, Callable, Optional
 
 import numpy as np
@@ -80,25 +81,28 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
         self._endog = pd.Series(dtype=float)
         self._exog = pd.DataFrame()
 
-    def fit(self, endog: pd.Series, exog: pd.DataFrame = None, weights: Union[Sequence, float] = 1.0, **kwargs):
-        self._endog, self._exog = self._prepare_data(endog=endog, exog=exog)
+    def fit(
+        self, y: pd.Series, X: pd.DataFrame = None, weights: Union[Sequence, float] = 1.0, **kwargs
+    ) -> HandCraftedLinearModel:
+        self._endog, self._exog = self._prepare_data(endog=y, exog=X)
         transformed = self._transform_all_data(endog=self._endog, exog=self._get_in_sample_exog(self._endog))
         rhs_vars = self._convert_transformed_dict_to_frame(transformed=transformed)
         self._fit_results = WLS(endog=self._endog, exog=rhs_vars, weights=weights, missing="drop").fit()
+        return self
 
     def predict(
         self,
         num_steps: int,
-        endog: pd.Series = None,
-        exog: pd.DataFrame = None,
+        y: pd.Series = None,
+        X: pd.DataFrame = None,
         weights: Union[Sequence, float] = 1.0,
         quantile_levels: List[float] = None,
         num_simulations: int = None,
         **kwargs
     ) -> pd.DataFrame:
-        self._endog, self._exog = self._prepare_data(endog=endog, exog=exog)
+        self._endog, self._exog = self._prepare_data(endog=y, exog=X)
         nobs = self._get_num_observations(self._endog)
-        self._check_exogenous(exog=exog, nobs=nobs, num_steps=num_steps)
+        self._check_exogenous(exog=X, nobs=nobs, num_steps=num_steps)
         endog_updated = pd.concat(
             [self._endog, pd.Series(np.empty(num_steps), name=self._get_endog_name(), index=self._exog.index[nobs:])]
         )

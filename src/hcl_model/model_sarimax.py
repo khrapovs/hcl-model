@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import List
 
 import pandas as pd
@@ -35,8 +36,8 @@ class SARIMAXModel(TimeSeriesModelArchetype):
         self._exog = None
         self._trend_fit = None
 
-    def fit(self, endog: pd.Series, exog: pd.DataFrame = None, **kwargs) -> None:
-        self._endog, self._exog = self._prepare_data(endog=endog, exog=exog)
+    def fit(self, y: pd.Series, X: pd.DataFrame = None, **kwargs) -> SARIMAXModel:
+        self._endog, self._exog = self._prepare_data(endog=y, exog=X)
         self._endog = self._remove_trend(self._endog)
         self._fit_results = SARIMAX(
             self._endog,
@@ -45,16 +46,12 @@ class SARIMAXModel(TimeSeriesModelArchetype):
             seasonal_order=self._seasonal_order,
             enforce_stationarity=self._enforce_stationarity,
         ).fit(disp=False)
+        return self
 
     def predict(
-        self,
-        num_steps: int,
-        endog: pd.Series = None,
-        exog: pd.DataFrame = None,
-        quantile_levels: List[float] = None,
-        **kwargs
+        self, num_steps: int, y: pd.Series = None, X: pd.DataFrame = None, quantile_levels: List[float] = None, **kwargs
     ) -> pd.DataFrame:
-        self._endog, self._exog = self._prepare_data(endog=endog, exog=exog)
+        self._endog, self._exog = self._prepare_data(endog=y, exog=X)
         nobs = self._get_num_observations(self._endog)
         self._check_exogenous(exog=self._exog, nobs=nobs, num_steps=num_steps)
         forecast = self._fit_results.get_forecast(steps=num_steps, exog=self._get_out_sample_exog(num_steps=num_steps))
@@ -76,7 +73,7 @@ class SARIMAXModel(TimeSeriesModelArchetype):
         nobs = self._get_num_observations(self._endog)
         self._check_exogenous(exog=self._exog, nobs=nobs, num_steps=num_steps)
         if self._fit_results is None:
-            self.fit(endog=self._endog, exog=self._get_in_sample_exog(self._endog))
+            self.fit(y=self._endog, exog=self._get_in_sample_exog(self._endog))
 
         idx = slice(
             self._get_num_observations(self._endog),
