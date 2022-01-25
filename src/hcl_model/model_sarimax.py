@@ -62,9 +62,6 @@ class SARIMAXModel(TimeSeriesModelArchetype):
 
     def _simulate(self, num_steps: int, num_simulations: int, X: pd.DataFrame = None, **kwargs) -> pd.DataFrame:
         self._y_train = self._remove_trend(self._y_train)
-        if self._fit_results is None:
-            self.fit(y=self._y_train, exog=self._x_train)
-
         sim_model = SARIMAX(
             pd.Series(index=X.index, dtype=float),
             exog=X,
@@ -73,10 +70,8 @@ class SARIMAXModel(TimeSeriesModelArchetype):
             enforce_stationarity=self._enforce_stationarity,
         )
         sim_model = sim_model.filter(params=self._fit_results.params)
-
         # TODO: check simulation output for different model. I am not sure it is correct without initial_sate.
-        simulation = {i: sim_model.simulate(num_steps) for i in range(num_simulations)}
-        return pd.DataFrame(simulation)
+        return pd.DataFrame({i: sim_model.simulate(num_steps) for i in range(num_simulations)})
 
     def _get_aic(self) -> float:
         return self._fit_results.aic
