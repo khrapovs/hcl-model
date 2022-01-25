@@ -68,26 +68,22 @@ class TimeSeriesModelArchetype(ABC):
     ) -> pd.DataFrame:
         pass
 
-    def simulate(
-        self, num_steps: int, num_simulations: int, y: pd.Series = None, X: pd.DataFrame = None, **kwargs
-    ) -> pd.DataFrame:
+    def simulate(self, num_steps: int, num_simulations: int, X: pd.DataFrame = None, **kwargs) -> pd.DataFrame:
         """
         Simulate `num_simulations` realizations of the next `num_steps` values
 
         :param num_steps: number of points in the future that we want to simulate
         :param num_simulations: number of independent simulations
-        :param y: endogenous variables, if not provided the model should use the data provided into the fit() method
         :param X: exogenous variables
         :return: A DataFrame containing simulations
         """
         if X is not None:
             self._x_train = pd.concat([self._x_train, X])
-        return self._simulate(num_steps=num_steps, num_simulations=num_simulations, y=y, X=X, **kwargs)
+        self._check_exogenous(exog=self._x_train, nobs=self._nobs, num_steps=num_steps)
+        return self._simulate(num_steps=num_steps, num_simulations=num_simulations, X=X, **kwargs)
 
     @abstractmethod
-    def _simulate(
-        self, num_steps: int, num_simulations: int, y: pd.Series = None, X: pd.DataFrame = None, **kwargs
-    ) -> pd.DataFrame:
+    def _simulate(self, num_steps: int, num_simulations: int, X: pd.DataFrame = None, **kwargs) -> pd.DataFrame:
         pass
 
     def summary(self) -> pd.Series:

@@ -65,7 +65,6 @@ class SARIMAXModel(TimeSeriesModelArchetype):
         self, num_steps: int, num_simulations: int, y: pd.Series = None, X: pd.DataFrame = None, **kwargs
     ) -> pd.DataFrame:
         self._y_train = self._remove_trend(self._y_train)
-        self._check_exogenous(exog=self._x_train, nobs=self._nobs, num_steps=num_steps)
         if self._fit_results is None:
             self.fit(y=self._y_train, exog=self._x_train)
 
