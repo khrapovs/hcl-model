@@ -194,9 +194,6 @@ class TimeSeriesModelArchetype(ABC):
     def _get_num_observations(endog: pd.Series = None) -> int:
         return endog.shape[0]
 
-    def _get_in_sample_data(self) -> pd.DataFrame:
-        return pd.concat([self._y_train, self._x_train], axis=1)
-
     def _get_parameters(self) -> pd.Series:
         return self._fit_results.params
 
