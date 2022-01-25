@@ -25,13 +25,12 @@ class SARIMAXModel(TimeSeriesModelArchetype):
         seasonal_order: tuple = (0, 0, 0, 0),
         trend: str = "c",
         enforce_stationarity: bool = True,
-    ):
+    ) -> None:
         super().__init__()
         self._order = order
         self._seasonal_order = seasonal_order
         self._trend = trend
         self._enforce_stationarity = enforce_stationarity
-        self._fit_results = None
         self._endog = pd.Series(dtype=float)
         self._exog = None
         self._trend_fit = None

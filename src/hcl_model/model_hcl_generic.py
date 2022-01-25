@@ -61,11 +61,7 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
     lbl_original_endog = "original_endog"
     lbl_original_exog = "original_exog"
 
-    def __init__(
-        self,
-        endog_transform: Optional[Dict[str, Callable]] = None,
-        exog_transform: Optional[Dict[str, Callable]] = None,
-    ):
+    def __init__(self, endog_transform: Dict[str, Callable] = None, exog_transform: Dict[str, Callable] = None) -> None:
         super().__init__()
         if endog_transform is None:
             self._endog_transform = {self.lbl_original_endog: lambda x: x}
@@ -75,11 +71,6 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
             self._exog_transform = {self.lbl_original_exog: lambda x: x}
         else:
             self._exog_transform = exog_transform
-        # statsmodels object with model fit results
-        self._fit_results = None
-        # empty Series
-        self._endog = pd.Series(dtype=float)
-        self._exog = pd.DataFrame()
 
     def fit(
         self, y: pd.Series, X: pd.DataFrame = None, weights: Union[Sequence, float] = 1.0, **kwargs
