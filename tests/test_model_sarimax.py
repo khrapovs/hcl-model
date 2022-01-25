@@ -60,8 +60,8 @@ class TestSARIMAX(TestModelCommon):
         model = SARIMAXModel(trend="ct")
         num_steps = 10
         lbl_value = "value"
-        model.fit(y=endog.loc[endog.index[:-num_steps], lbl_value], X=exog)
-        forecast = model.predict(num_steps=num_steps)
+        model.fit(y=endog.loc[endog.index[:-num_steps], lbl_value], X=exog.loc[endog.index[:-num_steps]])
+        forecast = model.predict(num_steps=num_steps, X=exog.loc[endog.index[-num_steps:]])
 
         # print(forecast)
         assert isinstance(forecast, pd.DataFrame)
@@ -77,8 +77,10 @@ class TestSARIMAX(TestModelCommon):
         num_steps = 10
         num_simulations = 5
 
-        model.fit(y=endog.loc[endog.index[:-num_steps], "value"], X=exog)
-        simulations = model.simulate(num_steps=num_steps, num_simulations=num_simulations)
+        model.fit(y=endog.loc[endog.index[:-num_steps], "value"], X=exog.loc[endog.index[:-num_steps]])
+        simulations = model.simulate(
+            num_steps=num_steps, num_simulations=num_simulations, X=exog.loc[endog.index[-num_steps:]]
+        )
 
         assert isinstance(simulations, pd.DataFrame)
         assert simulations.shape == (num_steps, num_simulations)
@@ -93,8 +95,13 @@ class TestSARIMAX(TestModelCommon):
         quantile_levels = [5, 95]
         lbl_value = "value"
 
-        model.fit(y=endog.loc[endog.index[:-num_steps], lbl_value], X=exog)
-        forecast = model.predict(num_steps=num_steps, quantile_levels=quantile_levels, num_simulations=num_simulations)
+        model.fit(y=endog.loc[endog.index[:-num_steps], lbl_value], X=exog.loc[endog.index[:-num_steps]])
+        forecast = model.predict(
+            num_steps=num_steps,
+            quantile_levels=quantile_levels,
+            num_simulations=num_simulations,
+            X=exog.loc[endog.index[-num_steps:]],
+        )
 
         assert isinstance(forecast, pd.DataFrame)
         assert forecast.shape == (num_steps, len(quantile_levels) + 1)

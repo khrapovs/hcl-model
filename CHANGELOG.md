@@ -2,6 +2,7 @@
 
 ### 0.4.0 (2022-01-25)
 - Rename arguments: `exog` into `X`, and `endog` into `y`. This is done to comply with [`sklearn`](https://scikit-learn.org/stable/developers/develop.html) general interface.
+- Now `.fit` should be fed only with past data, and `.predict` only with future data.
 
 ### 0.3.9 (2021-05-19)
 - Allow passing arbitrary transformations to `HandCraftedLinearModel` that return multi-column dataframes.

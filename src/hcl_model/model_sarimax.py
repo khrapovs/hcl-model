@@ -49,7 +49,8 @@ class SARIMAXModel(TimeSeriesModelArchetype):
     def predict(
         self, num_steps: int, X: pd.DataFrame = None, quantile_levels: List[float] = None, **kwargs
     ) -> pd.DataFrame:
-        self._exog = self._prepare_exog(exog=X)
+        if X is not None:
+            self._exog = pd.concat([self._exog, X])
         nobs = self._get_num_observations(self._endog)
         self._check_exogenous(exog=self._exog, nobs=nobs, num_steps=num_steps)
         forecast = self._fit_results.get_forecast(steps=num_steps, exog=self._get_out_sample_exog(num_steps=num_steps))
@@ -64,9 +65,10 @@ class SARIMAXModel(TimeSeriesModelArchetype):
         return self._add_trend(df=predictions)
 
     def simulate(
-        self, num_steps: int, num_simulations: int, endog: pd.Series = None, exog: pd.DataFrame = None, **kwargs
+        self, num_steps: int, num_simulations: int, y: pd.Series = None, X: pd.DataFrame = None, **kwargs
     ) -> pd.DataFrame:
-        self._endog, self._exog = self._prepare_data(endog=endog, exog=exog)
+        if X is not None:
+            self._exog = pd.concat([self._exog, X])
         self._endog = self._remove_trend(self._endog)
         nobs = self._get_num_observations(self._endog)
         self._check_exogenous(exog=self._exog, nobs=nobs, num_steps=num_steps)

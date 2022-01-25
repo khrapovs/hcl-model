@@ -30,8 +30,8 @@ class TestHCL(TestModelCommon):
         model = HandCraftedLinearModel()
         num_steps = 10
         lbl_value = "value"
-        model.fit(y=endog.loc[endog.index[:-num_steps], lbl_value], X=exog)
-        forecast = model.predict(num_steps=num_steps)
+        model.fit(y=endog.loc[endog.index[:-num_steps], lbl_value], X=exog.loc[endog.index[:-num_steps]])
+        forecast = model.predict(num_steps=num_steps, X=exog.loc[endog.index[-num_steps:]])
 
         assert isinstance(forecast, pd.DataFrame)
         assert forecast.shape[0] == num_steps
@@ -45,8 +45,10 @@ class TestHCL(TestModelCommon):
         num_steps = 10
         num_simulations = 5
 
-        model.fit(y=endog.loc[endog.index[:-num_steps], "value"], X=exog)
-        simulations = model.simulate(num_steps=num_steps, num_simulations=num_simulations)
+        model.fit(y=endog.loc[endog.index[:-num_steps], "value"], X=exog.loc[endog.index[:-num_steps]])
+        simulations = model.simulate(
+            num_steps=num_steps, num_simulations=num_simulations, X=exog.loc[endog.index[-num_steps:]]
+        )
 
         assert isinstance(simulations, pd.DataFrame)
         assert simulations.shape == (num_steps, num_simulations)
@@ -61,8 +63,13 @@ class TestHCL(TestModelCommon):
         quantile_levels = [5, 95]
         lbl_value = "value"
 
-        model.fit(y=endog.loc[endog.index[:-num_steps], lbl_value], X=exog)
-        forecast = model.predict(num_steps=num_steps, quantile_levels=quantile_levels, num_simulations=num_simulations)
+        model.fit(y=endog.loc[endog.index[:-num_steps], lbl_value], X=exog.loc[endog.index[:-num_steps]])
+        forecast = model.predict(
+            num_steps=num_steps,
+            quantile_levels=quantile_levels,
+            num_simulations=num_simulations,
+            X=exog.loc[endog.index[-num_steps:]],
+        )
 
         assert isinstance(forecast, pd.DataFrame)
         assert forecast.shape == (num_steps, len(quantile_levels) + 1)
@@ -209,7 +216,7 @@ class TestHCLTransforms:
             X=data.iloc[:-num_steps, 1:],
         )
 
-        forecast = model.predict(num_steps=num_steps, X=data.iloc[:, 1:])
+        forecast = model.predict(num_steps=num_steps, X=data.iloc[-num_steps:, 1:])
 
         assert isinstance(forecast, pd.DataFrame)
         assert forecast.shape[0] == num_steps
@@ -229,11 +236,14 @@ class TestHCLTransforms:
 
         model = HandCraftedLinearModel(endog_transform=f, exog_transform=g)
         endog = data.loc[data.index[:-num_steps], "value"]
-        exog = data.iloc[:, 1:]
+        exog = data.iloc[:-num_steps, 1:]
         model.fit(y=endog, X=exog)
 
         forecast = model.predict(
-            num_steps=num_steps, X=exog, quantile_levels=quantile_levels, num_simulations=num_simulations
+            num_steps=num_steps,
+            X=exog.loc[endog.index[-num_steps:]],
+            quantile_levels=quantile_levels,
+            num_simulations=num_simulations,
         )
 
         assert isinstance(forecast, pd.DataFrame)
@@ -262,7 +272,7 @@ class TestHCLTransforms:
         transformed_df = model._convert_transformed_dict_to_frame(transformed=transformed)
         model.fit(y=data.loc[data.index[:-num_steps], "value"], X=exog)
 
-        forecast = model.predict(num_steps=num_steps, X=data.iloc[:, 1:])
+        forecast = model.predict(num_steps=num_steps, X=data.iloc[-num_steps:, 1:])
 
         assert isinstance(forecast, pd.DataFrame)
         assert forecast.shape[0] == num_steps
@@ -332,7 +342,7 @@ class TestHCLWeightedTransforms:
             weights=weights[:-num_steps],
         )
 
-        forecast = model.predict(num_steps=num_steps, X=data.iloc[:, 1:])
+        forecast = model.predict(num_steps=num_steps, X=data.iloc[-num_steps:, 1:])
 
         assert isinstance(forecast, pd.DataFrame)
         assert forecast.shape[0] == num_steps

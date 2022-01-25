@@ -55,15 +55,15 @@ class TimeSeriesModelArchetype(ABC):
 
     @abstractmethod
     def simulate(
-        self, num_steps: int, num_simulations: int, endog: pd.Series = None, exog: pd.DataFrame = None, **kwargs
+        self, num_steps: int, num_simulations: int, y: pd.Series = None, X: pd.DataFrame = None, **kwargs
     ) -> pd.DataFrame:
         """
         Simulate `num_simulations` realizations of the next `num_steps` values
 
         :param num_steps: number of points in the future that we want to simulate
         :param num_simulations: number of independent simulations
-        :param endog: endogenous variables, if not provided the model should use the data provided into the fit() method
-        :param exog: exogenous variables
+        :param y: endogenous variables, if not provided the model should use the data provided into the fit() method
+        :param X: exogenous variables
         :return: A DataFrame containing simulations
         """
 
@@ -196,16 +196,13 @@ class TimeSeriesModelArchetype(ABC):
 
     def _get_in_sample_exog(self, endog: pd.Series) -> Union[pd.DataFrame, None]:
         if self._exog is not None:
-            return self._exog.iloc[: self._get_num_observations(endog)]
+            return self._exog  # .loc[: self._get_num_observations(endog)]
         else:
             return None
 
     def _get_out_sample_exog(self, num_steps: int = None) -> Union[pd.DataFrame, None]:
         if self._exog is not None:
-            idx = slice(
-                self._get_num_observations(self._endog),
-                self._get_num_observations(self._endog) + num_steps,
-            )
+            idx = slice(self._get_num_observations(self._endog), self._get_num_observations(self._endog) + num_steps)
             return self._exog.iloc[idx]
         else:
             return None
