@@ -63,9 +63,8 @@ class TimeSeriesModelArchetype(ABC):
             2019-06-07   102      75     127
             2019-06-14   305     206     278
         """
-        if X is not None:
-            self._x_train = pd.concat([self._x_train, X])
-        self._check_exogenous(exog=self._x_train, nobs=self._nobs, num_steps=num_steps)
+        x_train_and_test = pd.concat([self._x_train, X]) if X is not None else self._x_train
+        self._check_exogenous(exog=x_train_and_test, nobs=self._nobs, num_steps=num_steps)
         predictions = self._predict(num_steps=num_steps, X=X, quantile_levels=quantile_levels, **kwargs)
         if quantile_levels is not None:
             quantiles = self._compute_prediction_quantiles(

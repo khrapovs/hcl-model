@@ -83,10 +83,10 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
         endog_updated = pd.concat(
             [self._y_train, pd.Series(np.empty(num_steps), name=self._get_endog_name(), index=X.index)]
         )
-
+        x_train_and_test = pd.concat([self._x_train, X])
         for j in range(num_steps):
             transformed = self._transform_all_data(
-                endog=endog_updated[: self._nobs + j + 1], exog=self._x_train.iloc[: self._nobs + j + 1]
+                endog=endog_updated[: self._nobs + j + 1], exog=x_train_and_test.iloc[: self._nobs + j + 1]
             )
             rhs_vars = self._convert_transformed_dict_to_frame(transformed=transformed).iloc[-1, :]
             endog_updated.iloc[self._nobs + j] = np.dot(rhs_vars, self._get_parameters())
