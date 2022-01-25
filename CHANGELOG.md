@@ -1,6 +1,6 @@
 ## Changelog
 
-### 0.4.0 (2022-01-25)
+### 0.4.0 (2022-01-26)
 - Rename arguments: `exog` into `X`, and `endog` into `y`. This is done to comply with [`sklearn`](https://scikit-learn.org/stable/developers/develop.html) general interface.
 - Now `.fit` should be fed only with past data, and `.predict` only with future data.
 
