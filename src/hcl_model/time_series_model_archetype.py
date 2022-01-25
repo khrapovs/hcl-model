@@ -84,7 +84,7 @@ class TimeSeriesModelArchetype(ABC):
         return self._simulate(num_steps=num_steps, num_simulations=num_simulations, X=X, **kwargs)
 
     @abstractmethod
-    def _simulate(self, num_steps: int, num_simulations: int, X: pd.DataFrame = None, **kwargs) -> pd.DataFrame:
+    def _simulate(self, num_steps: int, num_simulations: int, **kwargs) -> pd.DataFrame:
         pass
 
     def summary(self) -> pd.Series:

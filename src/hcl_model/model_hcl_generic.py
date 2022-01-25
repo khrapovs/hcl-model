@@ -101,9 +101,7 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
 
         return predictions
 
-    def _simulate(
-        self, num_steps: int, num_simulations: int, X: pd.DataFrame = None, weights: Union[Sequence, float] = 1.0
-    ) -> pd.DataFrame:
+    def _simulate(self, num_steps: int, num_simulations: int, **kwargs) -> pd.DataFrame:
         num_params = self._get_parameters().shape[0]
         simulation = np.empty((num_steps, num_simulations))
 
