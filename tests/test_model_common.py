@@ -11,11 +11,12 @@ from hcl_model.model_sarimax import SARIMAXModel
 
 class TestModelCommon:
     lbl_date = "date"
+    lbl_value = "value"
 
     def generate_data(self) -> Tuple[pd.DataFrame, pd.DataFrame]:
         nobs = 30
         index = pd.date_range("2019-01-01", periods=nobs, freq="W-FRI", name=self.lbl_date)
-        endog = pd.DataFrame({"value": np.arange(1, nobs + 1) + np.random.normal(size=nobs)}, index=index)
+        endog = pd.DataFrame({self.lbl_value: np.arange(1, nobs + 1) + np.random.normal(size=nobs)}, index=index)
         exog = pd.DataFrame({"const": np.ones(nobs), "time": np.arange(1, nobs + 1)}, index=index)
         return endog, exog
 
@@ -41,18 +42,20 @@ class TestModelCommon:
 
 
 class TestPredictionsSanity:
+    lbl_value = "value"
+
     def test_constant(self):
         nobs = 30
         num_steps = 10
-        lbl_value = "value"
+
         index = pd.date_range("2019-01-01", periods=nobs, freq="W-FRI", name="date")
-        data = pd.Series(np.arange(1, nobs + 1), index=index, name=lbl_value)
-        exog = add_trend(data, trend="c", has_constant="add").drop(lbl_value, axis=1)
+        data = pd.Series(np.arange(1, nobs + 1), index=index, name=self.lbl_value)
+        exog = add_trend(data, trend="c", has_constant="add").drop(self.lbl_value, axis=1)
         y_train = data.iloc[:-num_steps]
         x_train = exog.iloc[:-num_steps]
         x_test = exog.iloc[-num_steps:]
 
-        expected_forecast = pd.DataFrame({lbl_value: y_train.mean()}, index=index[-num_steps:])
+        expected_forecast = pd.DataFrame({self.lbl_value: y_train.mean()}, index=index[-num_steps:])
 
         model = SARIMAXModel(trend="c")
         model.fit(y=y_train)
@@ -68,15 +71,14 @@ class TestPredictionsSanity:
     def test_linear_trend(self):
         nobs = 30
         num_steps = 10
-        lbl_value = "value"
         index = pd.date_range("2019-01-01", periods=nobs, freq="W-FRI", name="date")
-        data = pd.Series(np.arange(1, nobs + 1), index=index, name=lbl_value, dtype=float)
-        exog = add_trend(data, trend="ct", has_constant="add").drop(lbl_value, axis=1)
+        data = pd.Series(np.arange(1, nobs + 1), index=index, name=self.lbl_value, dtype=float)
+        exog = add_trend(data, trend="ct", has_constant="add").drop(self.lbl_value, axis=1)
         y_train = data.iloc[:-num_steps]
         x_train = exog.iloc[:-num_steps]
         x_test = exog.iloc[-num_steps:]
 
-        expected_forecast = pd.DataFrame({lbl_value: data.iloc[-num_steps:].values}, index=index[-num_steps:])
+        expected_forecast = pd.DataFrame({self.lbl_value: data.iloc[-num_steps:].values}, index=index[-num_steps:])
 
         model = SARIMAXModel(trend="ct")
         model.fit(y=y_train)
@@ -92,10 +94,9 @@ class TestPredictionsSanity:
     def test_ar1_with_const(self):
         nobs = 30
         num_steps = 10
-        lbl_value = "value"
         index = pd.date_range("2019-01-01", periods=nobs, freq="W-FRI", name="date")
-        data = pd.Series(np.arange(1, nobs + 1), index=index, name=lbl_value, dtype=float)
-        exog = add_trend(data, trend="c", has_constant="add").drop(lbl_value, axis=1)
+        data = pd.Series(np.arange(1, nobs + 1), index=index, name=self.lbl_value, dtype=float)
+        exog = add_trend(data, trend="c", has_constant="add").drop(self.lbl_value, axis=1)
         y_train = data.iloc[:-num_steps]
         x_train = exog.iloc[:-num_steps]
         x_test = exog.iloc[-num_steps:]
@@ -114,10 +115,9 @@ class TestPredictionsSanity:
     def test_ar1_with_linear_trend(self):
         nobs = 30
         num_steps = 10
-        lbl_value = "value"
         index = pd.date_range("2019-01-01", periods=nobs, freq="W-FRI", name="date")
-        data = pd.Series(np.arange(1, nobs + 1), index=index, name=lbl_value, dtype=float)
-        exog = add_trend(data, trend="ct", has_constant="add").drop(lbl_value, axis=1)
+        data = pd.Series(np.arange(1, nobs + 1), index=index, name=self.lbl_value, dtype=float)
+        exog = add_trend(data, trend="ct", has_constant="add").drop(self.lbl_value, axis=1)
         y_train = data.iloc[:-num_steps]
         x_train = exog.iloc[:-num_steps]
         x_test = exog.iloc[-num_steps:]

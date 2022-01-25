@@ -13,7 +13,7 @@ from tests.test_model_common import TestModelCommon
 class TestHCL(TestModelCommon):
     def test_model_fit(self):
         endog, x_train = self.generate_data()
-        y_train = endog["value"]
+        y_train = endog[self.lbl_value]
 
         model = HandCraftedLinearModel()
         model.fit(y=y_train, X=x_train)
@@ -27,8 +27,8 @@ class TestHCL(TestModelCommon):
         endog, exog = self.generate_data()
         model = HandCraftedLinearModel()
         num_steps = 10
-        lbl_value = "value"
-        y_train = endog.loc[endog.index[:-num_steps], lbl_value]
+
+        y_train = endog.loc[endog.index[:-num_steps], self.lbl_value]
         x_train = exog.loc[endog.index[:-num_steps]]
         x_test = exog.loc[endog.index[-num_steps:]]
 
@@ -37,7 +37,7 @@ class TestHCL(TestModelCommon):
 
         assert isinstance(forecast, pd.DataFrame)
         assert forecast.shape[0] == num_steps
-        assert forecast.columns[0] == lbl_value
+        assert forecast.columns[0] == self.lbl_value
         assert forecast.index.name == self.lbl_date
         assert isinstance(forecast.index, pd.DatetimeIndex)
 
@@ -46,8 +46,8 @@ class TestHCL(TestModelCommon):
         model = HandCraftedLinearModel()
         num_steps = 10
         num_simulations = 5
-        lbl_value = "value"
-        y_train = endog.loc[endog.index[:-num_steps], lbl_value]
+
+        y_train = endog.loc[endog.index[:-num_steps], self.lbl_value]
         x_train = exog.loc[endog.index[:-num_steps]]
         x_test = exog.loc[endog.index[-num_steps:]]
 
@@ -65,8 +65,8 @@ class TestHCL(TestModelCommon):
         num_steps = 10
         num_simulations = 5
         quantile_levels = [5, 95]
-        lbl_value = "value"
-        y_train = endog.loc[endog.index[:-num_steps], lbl_value]
+
+        y_train = endog.loc[endog.index[:-num_steps], self.lbl_value]
         x_train = exog.loc[endog.index[:-num_steps]]
         x_test = exog.loc[endog.index[-num_steps:]]
 
@@ -77,7 +77,7 @@ class TestHCL(TestModelCommon):
 
         assert isinstance(forecast, pd.DataFrame)
         assert forecast.shape == (num_steps, len(quantile_levels) + 1)
-        assert forecast.columns[0] == lbl_value
+        assert forecast.columns[0] == self.lbl_value
         assert forecast.index.name == self.lbl_date
         assert isinstance(forecast.index, pd.DatetimeIndex)
 
@@ -85,7 +85,7 @@ class TestHCL(TestModelCommon):
         endog, exog = self.generate_data()
 
         model = HandCraftedLinearModel()
-        model.fit(y=endog["value"], X=exog)
+        model.fit(y=endog[self.lbl_value], X=exog)
 
         assert set(model.summary().index) >= {
             model.lbl_aic,
@@ -101,12 +101,13 @@ class TestHCL(TestModelCommon):
 
 class TestHCLTransforms:
     lbl_date = "date"
+    lbl_value = "value"
 
     def generate_input(self) -> pd.DataFrame:
         nobs = 30
         endog = pd.Series(
             np.arange(1, nobs + 1) + np.random.normal(size=nobs, scale=1e-1),
-            name="value",
+            name=self.lbl_value,
             index=pd.date_range("2019-01-01", periods=nobs, freq="W-FRI", name=self.lbl_date),
         )
         data = endog.to_frame()
@@ -145,7 +146,7 @@ class TestHCLTransforms:
         g = self._get_exog_transform()
 
         model = HandCraftedLinearModel(endog_transform=f, exog_transform=g)
-        endog = data["value"]
+        endog = data[self.lbl_value]
         exog = data.iloc[:, 1:]
 
         transformed = model._transform_data(data=endog, transform=f)
@@ -175,7 +176,7 @@ class TestHCLTransforms:
         g = self._get_exog_transform()
 
         model = HandCraftedLinearModel(endog_transform=f, exog_transform=g)
-        endog = data["value"]
+        endog = data[self.lbl_value]
         exog = data.iloc[:, 1:]
 
         transformed = model._transform_all_data(exog=exog, endog=endog)
@@ -191,7 +192,7 @@ class TestHCLTransforms:
         data = self.generate_input()
         f = self._get_endog_transform()
         g = self._get_exog_transform()
-        y_train = data["value"]
+        y_train = data[self.lbl_value]
         x_train = data.iloc[:, 1:]
 
         model = HandCraftedLinearModel(endog_transform=f, exog_transform=g)
@@ -213,7 +214,7 @@ class TestHCLTransforms:
         f = self._get_endog_transform()
         g = self._get_exog_transform()
         num_steps = 5
-        y_train = data.loc[data.index[:-num_steps], "value"]
+        y_train = data.loc[data.index[:-num_steps], self.lbl_value]
         x_train = data.iloc[:-num_steps, 1:]
         x_test = data.iloc[-num_steps:, 1:]
 
@@ -224,7 +225,7 @@ class TestHCLTransforms:
 
         assert isinstance(forecast, pd.DataFrame)
         assert forecast.shape[0] == num_steps
-        assert forecast.columns[0] == "value"
+        assert forecast.columns[0] == self.lbl_value
         assert forecast.isna().sum().sum() == 0
         assert forecast.index.name == self.lbl_date
         assert isinstance(forecast.index, pd.DatetimeIndex)
@@ -239,7 +240,7 @@ class TestHCLTransforms:
         quantile_levels = [5, 95]
 
         model = HandCraftedLinearModel(endog_transform=f, exog_transform=g)
-        y_train = data.loc[data.index[:-num_steps], "value"]
+        y_train = data.loc[data.index[:-num_steps], self.lbl_value]
         x_train = data.iloc[:-num_steps, 1:]
         x_test = data.iloc[-num_steps:, 1:]
 
@@ -251,7 +252,7 @@ class TestHCLTransforms:
 
         assert isinstance(forecast, pd.DataFrame)
         assert forecast.shape == (num_steps, len(quantile_levels) + 1)
-        assert forecast.columns[0] == "value"
+        assert forecast.columns[0] == self.lbl_value
         assert forecast.isna().sum().sum() == 0
         assert forecast.index.name == self.lbl_date
         assert isinstance(forecast.index, pd.DatetimeIndex)
@@ -270,7 +271,7 @@ class TestHCLTransforms:
         }
         num_steps = 5
         x_train = data.iloc[:-num_steps, 1:]
-        y_train = data.loc[data.index[:-num_steps], "value"]
+        y_train = data.loc[data.index[:-num_steps], self.lbl_value]
         x_test = data.iloc[-num_steps:, 1:]
 
         model = HandCraftedLinearModel(endog_transform=f, exog_transform=g)
@@ -282,7 +283,7 @@ class TestHCLTransforms:
 
         assert isinstance(forecast, pd.DataFrame)
         assert forecast.shape[0] == num_steps
-        assert forecast.columns[0] == "value"
+        assert forecast.columns[0] == self.lbl_value
         assert forecast.isna().sum().sum() == 0
         assert forecast.index.name == self.lbl_date
         assert isinstance(forecast.index, pd.DatetimeIndex)
@@ -294,12 +295,13 @@ class TestHCLTransforms:
 
 class TestHCLWeightedTransforms:
     lbl_date = "date"
+    lbl_value = "value"
 
     def generate_input(self):
         nobs = 30
         endog = pd.Series(
             np.arange(1, nobs + 1) + np.random.normal(size=nobs, scale=1e-1),
-            name="value",
+            name=self.lbl_value,
             index=pd.date_range("2019-01-01", periods=nobs, freq="W-FRI", name=self.lbl_date),
         )
 
@@ -320,7 +322,7 @@ class TestHCLWeightedTransforms:
     def test_model_fit(self):
         data, f, g, weights = self.generate_input()
 
-        y_train = data["value"]
+        y_train = data[self.lbl_value]
         x_train = data.iloc[:, 1:]
 
         model = HandCraftedLinearModel(endog_transform=f, exog_transform=g)
@@ -342,7 +344,7 @@ class TestHCLWeightedTransforms:
 
         num_steps = 5
         model = HandCraftedLinearModel(endog_transform=f, exog_transform=g)
-        y_train = data.loc[data.index[:-num_steps], "value"]
+        y_train = data.loc[data.index[:-num_steps], self.lbl_value]
         x_train = data.iloc[:-num_steps, 1:]
         x_test = data.iloc[-num_steps:, 1:]
         weights_train = weights[:-num_steps]
@@ -352,7 +354,7 @@ class TestHCLWeightedTransforms:
 
         assert isinstance(forecast, pd.DataFrame)
         assert forecast.shape[0] == num_steps
-        assert forecast.columns[0] == "value"
+        assert forecast.columns[0] == self.lbl_value
         assert forecast.isna().sum().sum() == 0
         assert forecast.index.name == self.lbl_date
         assert isinstance(forecast.index, pd.DatetimeIndex)

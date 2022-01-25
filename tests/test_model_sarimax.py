@@ -10,7 +10,7 @@ class TestSARIMAX(TestModelCommon):
         endog, exog = self.generate_data()
 
         model = SARIMAXModel(trend="n")
-        y_train = endog["value"]
+        y_train = endog[self.lbl_value]
         model.fit(y=y_train)
         parameters = model._get_parameters()
 
@@ -52,12 +52,10 @@ class TestSARIMAX(TestModelCommon):
         assert set(model.summary()[model.lbl_params].keys()) == {"const", "time", "sigma2"}
 
     def test_model_prediction(self):
-
         endog, exog = self.generate_data()
         model = SARIMAXModel(trend="ct")
         num_steps = 10
-        lbl_value = "value"
-        y_train = endog.loc[endog.index[:-num_steps], lbl_value]
+        y_train = endog.loc[endog.index[:-num_steps], self.lbl_value]
         x_train = exog.loc[endog.index[:-num_steps]]
         x_test = exog.loc[endog.index[-num_steps:]]
         model.fit(y=y_train, X=x_train)
@@ -65,18 +63,17 @@ class TestSARIMAX(TestModelCommon):
 
         assert isinstance(forecast, pd.DataFrame)
         assert forecast.shape[0] == num_steps
-        assert forecast.columns[0] == lbl_value
+        assert forecast.columns[0] == self.lbl_value
         assert forecast.index.name == self.lbl_date
         assert isinstance(forecast.index, pd.DatetimeIndex)
 
     def test_model_simulation(self):
-
         endog, exog = self.generate_data()
         model = SARIMAXModel(trend="ct")
         num_steps = 10
         num_simulations = 5
 
-        y_train = endog.loc[endog.index[:-num_steps], "value"]
+        y_train = endog.loc[endog.index[:-num_steps], self.lbl_value]
         x_train = exog.loc[endog.index[:-num_steps]]
         x_test = exog.loc[endog.index[-num_steps:]]
         model.fit(y=y_train, X=x_train)
@@ -93,9 +90,8 @@ class TestSARIMAX(TestModelCommon):
         num_steps = 10
         num_simulations = 5
         quantile_levels = [5, 95]
-        lbl_value = "value"
 
-        y_train = endog.loc[endog.index[:-num_steps], lbl_value]
+        y_train = endog.loc[endog.index[:-num_steps], self.lbl_value]
         x_train = exog.loc[endog.index[:-num_steps]]
         model.fit(y=y_train, X=x_train)
         x_test = exog.loc[endog.index[-num_steps:]]
@@ -105,7 +101,7 @@ class TestSARIMAX(TestModelCommon):
 
         assert isinstance(forecast, pd.DataFrame)
         assert forecast.shape == (num_steps, len(quantile_levels) + 1)
-        assert forecast.columns[0] == lbl_value
+        assert forecast.columns[0] == self.lbl_value
         assert forecast.index.name == self.lbl_date
         assert isinstance(forecast.index, pd.DatetimeIndex)
 
@@ -113,7 +109,7 @@ class TestSARIMAX(TestModelCommon):
         endog, exog = self.generate_data()
 
         model = SARIMAXModel(trend="n")
-        model.fit(y=endog["value"])
+        model.fit(y=endog[self.lbl_value])
 
         assert set(model.summary().index) >= {
             model.lbl_aic,
