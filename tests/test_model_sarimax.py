@@ -10,7 +10,8 @@ class TestSARIMAX(TestModelCommon):
         endog, exog = self.generate_data()
 
         model = SARIMAXModel(trend="n")
-        model.fit(y=endog["value"])
+        y_train = endog["value"]
+        model.fit(y=y_train)
         parameters = model._get_parameters()
 
         assert list(parameters.index) == ["sigma2"]
@@ -18,7 +19,7 @@ class TestSARIMAX(TestModelCommon):
         assert set(model.summary()[model.lbl_params].keys()) == {"sigma2"}
 
         model = SARIMAXModel(trend="c")
-        model.fit(y=endog["value"])
+        model.fit(y=y_train)
         parameters = model._get_parameters()
 
         assert list(parameters.index) == ["sigma2"]
@@ -27,7 +28,7 @@ class TestSARIMAX(TestModelCommon):
         assert set(model.summary()[model.lbl_params].keys()) == {"sigma2"}
 
         model = SARIMAXModel(trend="ct")
-        model.fit(y=endog["value"])
+        model.fit(y=y_train)
         parameters = model._get_parameters()
 
         assert list(parameters.index) == ["sigma2"]
@@ -35,7 +36,7 @@ class TestSARIMAX(TestModelCommon):
         assert set(model.summary()[model.lbl_params].keys()) == {"sigma2"}
 
         model = SARIMAXModel(trend="t")
-        model.fit(y=endog["value"])
+        model.fit(y=y_train)
         parameters = model._get_parameters()
 
         assert list(parameters.index) == ["sigma2"]
@@ -43,16 +44,12 @@ class TestSARIMAX(TestModelCommon):
         assert set(model.summary()[model.lbl_params].keys()) == {"sigma2"}
 
         model = SARIMAXModel(trend="n")
-        model.fit(y=endog["value"], X=exog)
+        model.fit(y=y_train, X=exog)
         parameters = model._get_parameters()
 
         assert list(parameters.index) == ["const", "time", "sigma2"]
         assert model._trend_fit is None
-        assert set(model.summary()[model.lbl_params].keys()) == {
-            "const",
-            "time",
-            "sigma2",
-        }
+        assert set(model.summary()[model.lbl_params].keys()) == {"const", "time", "sigma2"}
 
     def test_model_prediction(self):
 
@@ -60,10 +57,12 @@ class TestSARIMAX(TestModelCommon):
         model = SARIMAXModel(trend="ct")
         num_steps = 10
         lbl_value = "value"
-        model.fit(y=endog.loc[endog.index[:-num_steps], lbl_value], X=exog.loc[endog.index[:-num_steps]])
-        forecast = model.predict(num_steps=num_steps, X=exog.loc[endog.index[-num_steps:]])
+        y_train = endog.loc[endog.index[:-num_steps], lbl_value]
+        x_train = exog.loc[endog.index[:-num_steps]]
+        x_test = exog.loc[endog.index[-num_steps:]]
+        model.fit(y=y_train, X=x_train)
+        forecast = model.predict(num_steps=num_steps, X=x_test)
 
-        # print(forecast)
         assert isinstance(forecast, pd.DataFrame)
         assert forecast.shape[0] == num_steps
         assert forecast.columns[0] == lbl_value
@@ -77,10 +76,11 @@ class TestSARIMAX(TestModelCommon):
         num_steps = 10
         num_simulations = 5
 
-        model.fit(y=endog.loc[endog.index[:-num_steps], "value"], X=exog.loc[endog.index[:-num_steps]])
-        simulations = model.simulate(
-            num_steps=num_steps, num_simulations=num_simulations, X=exog.loc[endog.index[-num_steps:]]
-        )
+        y_train = endog.loc[endog.index[:-num_steps], "value"]
+        x_train = exog.loc[endog.index[:-num_steps]]
+        x_test = exog.loc[endog.index[-num_steps:]]
+        model.fit(y=y_train, X=x_train)
+        simulations = model.simulate(num_steps=num_steps, num_simulations=num_simulations, X=x_test)
 
         assert isinstance(simulations, pd.DataFrame)
         assert simulations.shape == (num_steps, num_simulations)
@@ -95,12 +95,12 @@ class TestSARIMAX(TestModelCommon):
         quantile_levels = [5, 95]
         lbl_value = "value"
 
-        model.fit(y=endog.loc[endog.index[:-num_steps], lbl_value], X=exog.loc[endog.index[:-num_steps]])
+        y_train = endog.loc[endog.index[:-num_steps], lbl_value]
+        x_train = exog.loc[endog.index[:-num_steps]]
+        model.fit(y=y_train, X=x_train)
+        x_test = exog.loc[endog.index[-num_steps:]]
         forecast = model.predict(
-            num_steps=num_steps,
-            quantile_levels=quantile_levels,
-            num_simulations=num_simulations,
-            X=exog.loc[endog.index[-num_steps:]],
+            num_steps=num_steps, quantile_levels=quantile_levels, num_simulations=num_simulations, X=x_test
         )
 
         assert isinstance(forecast, pd.DataFrame)
