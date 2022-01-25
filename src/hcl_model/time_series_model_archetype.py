@@ -1,11 +1,11 @@
-import abc
+from abc import ABC, abstractmethod
 from typing import List, Tuple, Union, Optional
 
 import numpy as np
 import pandas as pd
 
 
-class TimeSeriesModelArchetype(metaclass=abc.ABCMeta):
+class TimeSeriesModelArchetype(ABC):
     """Time Series Model Archetype."""
 
     lbl_r2 = "rsquared"
@@ -22,16 +22,16 @@ class TimeSeriesModelArchetype(metaclass=abc.ABCMeta):
         self._endog = pd.Series(dtype=float)
         self._exog = pd.DataFrame()
 
-    @abc.abstractmethod
-    def fit(self, y: pd.Series, exog: pd.DataFrame = None, **kwargs):
+    @abstractmethod
+    def fit(self, y: pd.Series, X: pd.DataFrame = None, **kwargs):
         """
         Fit the model using some provided training data.
 
         :param y: endogenous variable
-        :param exog: exogenous explanatory variables
+        :param X: exogenous explanatory variables
         """
 
-    @abc.abstractmethod
+    @abstractmethod
     def predict(
         self, num_steps: int, y: pd.Series = None, X: pd.DataFrame = None, quantile_levels: List[float] = None, **kwargs
     ) -> pd.DataFrame:
@@ -54,7 +54,7 @@ class TimeSeriesModelArchetype(metaclass=abc.ABCMeta):
             2019-06-14   305     206     278
         """
 
-    @abc.abstractmethod
+    @abstractmethod
     def simulate(
         self, num_steps: int, num_simulations: int, endog: pd.Series = None, exog: pd.DataFrame = None, **kwargs
     ) -> pd.DataFrame:
@@ -86,21 +86,21 @@ class TimeSeriesModelArchetype(metaclass=abc.ABCMeta):
             }
         )
 
-    @abc.abstractmethod
+    @abstractmethod
     def _get_aic(self) -> float:
         """Akaike Information Criterion of a model fit.
 
         :return: AIC statistic as a float.
         """
 
-    @abc.abstractmethod
+    @abstractmethod
     def _get_fitted_values(self) -> pd.Series:
         """get fitted values
 
         :return: One point ahead forecasts on the in-sample period which are the "fitted values" in time series context.
         """
 
-    @abc.abstractmethod
+    @abstractmethod
     def _get_residuals(self) -> pd.Series:
         """Get residuals
 
