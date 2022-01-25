@@ -147,7 +147,7 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
         return pd.DataFrame(simulation, index=X.index)
 
     def _compute_prediction_quantiles(
-        self, num_steps: int, num_simulations: int, quantile_levels: List[float] = None, X: pd.DataFrame = None
+        self, num_steps: int, num_simulations: int = None, quantile_levels: List[float] = None, X: pd.DataFrame = None
     ) -> pd.DataFrame:
         """Compute prediction percentiles from simulations.
 

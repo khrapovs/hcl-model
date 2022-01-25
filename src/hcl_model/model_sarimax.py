@@ -55,9 +55,7 @@ class SARIMAXModel(TimeSeriesModelArchetype):
         )
 
         if quantile_levels is not None:
-            quantiles = self._compute_prediction_quantiles_exact(
-                num_steps=num_steps, quantile_levels=quantile_levels, X=X
-            )
+            quantiles = self._compute_prediction_quantiles(num_steps=num_steps, quantile_levels=quantile_levels, X=X)
             predictions = pd.concat([predictions, quantiles], axis=1)
 
         return self._add_trend(df=predictions)
@@ -84,8 +82,8 @@ class SARIMAXModel(TimeSeriesModelArchetype):
     def _get_residuals(self) -> pd.Series:
         return self._fit_results.resid
 
-    def _compute_prediction_quantiles_exact(
-        self, num_steps: int, quantile_levels: List[float] = None, X: pd.DataFrame = None
+    def _compute_prediction_quantiles(
+        self, num_steps: int, quantile_levels: List[float] = None, X: pd.DataFrame = None, **kwargs
     ) -> pd.DataFrame:
         forecast = self._fit_results.get_forecast(steps=num_steps, exog=X)
         out = dict()

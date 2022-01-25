@@ -87,6 +87,12 @@ class TimeSeriesModelArchetype(ABC):
     def _simulate(self, num_steps: int, num_simulations: int, **kwargs) -> pd.DataFrame:
         pass
 
+    @abstractmethod
+    def _compute_prediction_quantiles(
+        self, num_steps: int, num_simulations: int = None, quantile_levels: List[float] = None, X: pd.DataFrame = None
+    ) -> pd.DataFrame:
+        pass
+
     def summary(self) -> pd.Series:
         """A summary of in-sample model performance KPIs.
 
