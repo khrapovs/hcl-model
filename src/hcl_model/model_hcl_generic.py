@@ -86,24 +86,24 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
         quantile_levels: List[float] = None,
         num_simulations: int = None,
     ) -> pd.DataFrame:
-        nobs = self._get_num_observations(self._y_train)
-        self._check_exogenous(exog=self._x_train, nobs=nobs, num_steps=num_steps)
+        nobs = self._nobs
+        self._check_exogenous(exog=self._x_train, nobs=self._nobs, num_steps=num_steps)
         endog_updated = pd.concat(
             [
                 self._y_train,
-                pd.Series(np.empty(num_steps), name=self._get_endog_name(), index=self._x_train.index[nobs:]),
+                pd.Series(np.empty(num_steps), name=self._get_endog_name(), index=self._x_train.index[self._nobs :]),
             ]
         )
 
         for j in range(num_steps):
             transformed = self._transform_all_data(
-                endog=endog_updated[: nobs + j + 1],
-                exog=self._x_train.iloc[: nobs + j + 1],
+                endog=endog_updated[: self._nobs + j + 1],
+                exog=self._x_train.iloc[: self._nobs + j + 1],
             )
             rhs_vars = self._convert_transformed_dict_to_frame(transformed=transformed).iloc[-1, :]
-            endog_updated.iloc[nobs + j] = np.dot(rhs_vars, self._get_parameters())
+            endog_updated.iloc[self._nobs + j] = np.dot(rhs_vars, self._get_parameters())
 
-        predictions = endog_updated.iloc[nobs:].to_frame().rename_axis(index=self._y_train.index.name)
+        predictions = endog_updated.iloc[self._nobs :].to_frame().rename_axis(index=self._y_train.index.name)
 
         if quantile_levels is not None:
             quantiles = self._compute_prediction_quantiles(
@@ -125,8 +125,7 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
     ) -> pd.DataFrame:
         if X is not None:
             self._x_train = pd.concat([self._x_train, X])
-        nobs = self._get_num_observations(self._y_train)
-        self._check_exogenous(exog=self._x_train, nobs=nobs, num_steps=num_steps)
+        self._check_exogenous(exog=self._x_train, nobs=self._nobs, num_steps=num_steps)
         num_params = self._get_parameters().shape[0]
         simulation = np.empty((num_steps, num_simulations))
 
@@ -156,22 +155,22 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
 
         # loop over horizon
         for j in range(num_steps):
-            transformed_endog = self._transform_all_data(endog=endog_updated.iloc[: nobs + j + 1])
+            transformed_endog = self._transform_all_data(endog=endog_updated.iloc[: self._nobs + j + 1])
             # apply model recursion plus innovation
             temp = 0
             for key, val in transformed_endog.items():
                 temp += val.iloc[-1, :] * beta_simulated[key]
 
-            transformed_exog = self._transform_all_data(exog=self._x_train.iloc[: nobs + j + 1])
+            transformed_exog = self._transform_all_data(exog=self._x_train.iloc[: self._nobs + j + 1])
             exog_df = self._convert_transformed_dict_to_frame(transformed=transformed_exog)
             for key in exog_df.columns:
                 temp += exog_df[key].iloc[-1] * beta_simulated[key]
 
             simulation[j] = temp + innovation[j]
             # update out-of-sample endogenous series with simulated value
-            endog_updated.loc[nobs + j] = simulation[j]
+            endog_updated.loc[self._nobs + j] = simulation[j]
 
-        return pd.DataFrame(simulation, index=self._x_train.index[nobs:])
+        return pd.DataFrame(simulation, index=self._x_train.index[self._nobs :])
 
     def _get_rsquared(self) -> float:
         return self._fit_results.rsquared

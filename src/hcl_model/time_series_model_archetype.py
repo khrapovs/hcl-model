@@ -190,9 +190,9 @@ class TimeSeriesModelArchetype(ABC):
     def _get_index_name(self) -> str:
         return self._y_train.index.name
 
-    @staticmethod
-    def _get_num_observations(endog: pd.Series = None) -> int:
-        return endog.shape[0]
+    @property
+    def _nobs(self) -> int:
+        return self._y_train.shape[0]
 
     def _get_parameters(self) -> pd.Series:
         return self._fit_results.params

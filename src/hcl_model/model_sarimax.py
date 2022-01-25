@@ -47,8 +47,7 @@ class SARIMAXModel(TimeSeriesModelArchetype):
     def _predict(
         self, num_steps: int, X: pd.DataFrame = None, quantile_levels: List[float] = None, **kwargs
     ) -> pd.DataFrame:
-        nobs = self._get_num_observations(self._y_train)
-        self._check_exogenous(exog=self._x_train, nobs=nobs, num_steps=num_steps)
+        self._check_exogenous(exog=self._x_train, nobs=self._nobs, num_steps=num_steps)
         forecast = self._fit_results.get_forecast(steps=num_steps, exog=X)
         predictions = pd.DataFrame(forecast.predicted_mean.rename(self._get_endog_name())).rename_axis(
             index=self._y_train.index.name
@@ -68,15 +67,11 @@ class SARIMAXModel(TimeSeriesModelArchetype):
         if X is not None:
             self._x_train = pd.concat([self._x_train, X])
         self._y_train = self._remove_trend(self._y_train)
-        nobs = self._get_num_observations(self._y_train)
-        self._check_exogenous(exog=self._x_train, nobs=nobs, num_steps=num_steps)
+        self._check_exogenous(exog=self._x_train, nobs=self._nobs, num_steps=num_steps)
         if self._fit_results is None:
             self.fit(y=self._y_train, exog=self._x_train)
 
-        idx = slice(
-            self._get_num_observations(self._y_train),
-            self._get_num_observations(self._y_train) + num_steps,
-        )
+        idx = slice(self._nobs, self._nobs + num_steps)
         sim_model = SARIMAX(
             pd.Series(index=self._x_train.iloc[idx].index, dtype=float),
             exog=self._x_train.iloc[idx],
