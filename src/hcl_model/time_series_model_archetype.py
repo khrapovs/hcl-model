@@ -175,7 +175,7 @@ class TimeSeriesModelArchetype(ABC):
             return self._exog
 
     @staticmethod
-    def _check_exogenous(exog: pd.DataFrame, nobs: int, num_steps: int):
+    def _check_exogenous(exog: pd.DataFrame, nobs: int, num_steps: int) -> None:
         """Check that provided exogenous data cover prediction horizon.
 
         :param nobs: the number of observations
