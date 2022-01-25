@@ -38,7 +38,7 @@ class SARIMAXModel(TimeSeriesModelArchetype):
         self._y_train = self._remove_trend(self._y_train)
         self._fit_results = SARIMAX(
             self._y_train,
-            exog=self._get_in_sample_exog(self._y_train),
+            exog=self._x_train,
             order=self._order,
             seasonal_order=self._seasonal_order,
             enforce_stationarity=self._enforce_stationarity,
@@ -69,7 +69,7 @@ class SARIMAXModel(TimeSeriesModelArchetype):
         nobs = self._get_num_observations(self._y_train)
         self._check_exogenous(exog=self._x_train, nobs=nobs, num_steps=num_steps)
         if self._fit_results is None:
-            self.fit(y=self._y_train, exog=self._get_in_sample_exog(self._y_train))
+            self.fit(y=self._y_train, exog=self._x_train)
 
         idx = slice(
             self._get_num_observations(self._y_train),

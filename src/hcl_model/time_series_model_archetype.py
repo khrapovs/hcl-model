@@ -194,12 +194,6 @@ class TimeSeriesModelArchetype(ABC):
     def _get_num_observations(endog: pd.Series = None) -> int:
         return endog.shape[0]
 
-    def _get_in_sample_exog(self, endog: pd.Series) -> Union[pd.DataFrame, None]:
-        if self._x_train is not None:
-            return self._x_train  # .loc[: self._get_num_observations(endog)]
-        else:
-            return None
-
     def _get_out_sample_exog(self, num_steps: int = None) -> Union[pd.DataFrame, None]:
         if self._x_train is not None:
             idx = slice(
@@ -210,7 +204,7 @@ class TimeSeriesModelArchetype(ABC):
             return None
 
     def _get_in_sample_data(self) -> pd.DataFrame:
-        return pd.concat([self._y_train, self._get_in_sample_exog(self._y_train)], axis=1)
+        return pd.concat([self._y_train, self._x_train], axis=1)
 
     def _get_parameters(self) -> pd.Series:
         return self._fit_results.params
