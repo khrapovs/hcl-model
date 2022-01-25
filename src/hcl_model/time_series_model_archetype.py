@@ -68,7 +68,6 @@ class TimeSeriesModelArchetype(ABC):
     ) -> pd.DataFrame:
         pass
 
-    @abstractmethod
     def simulate(
         self, num_steps: int, num_simulations: int, y: pd.Series = None, X: pd.DataFrame = None, **kwargs
     ) -> pd.DataFrame:
@@ -81,6 +80,15 @@ class TimeSeriesModelArchetype(ABC):
         :param X: exogenous variables
         :return: A DataFrame containing simulations
         """
+        if X is not None:
+            self._x_train = pd.concat([self._x_train, X])
+        return self._simulate(num_steps=num_steps, num_simulations=num_simulations, y=y, X=X, **kwargs)
+
+    @abstractmethod
+    def _simulate(
+        self, num_steps: int, num_simulations: int, y: pd.Series = None, X: pd.DataFrame = None, **kwargs
+    ) -> pd.DataFrame:
+        pass
 
     def summary(self) -> pd.Series:
         """A summary of in-sample model performance KPIs.

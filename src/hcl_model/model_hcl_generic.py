@@ -115,7 +115,7 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
 
         return predictions
 
-    def simulate(
+    def _simulate(
         self,
         num_steps: int,
         num_simulations: int,
@@ -123,8 +123,6 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
         X: pd.DataFrame = None,
         weights: Union[Sequence, float] = 1.0,
     ) -> pd.DataFrame:
-        if X is not None:
-            self._x_train = pd.concat([self._x_train, X])
         self._check_exogenous(exog=self._x_train, nobs=self._nobs, num_steps=num_steps)
         num_params = self._get_parameters().shape[0]
         simulation = np.empty((num_steps, num_simulations))
