@@ -162,8 +162,7 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
 
     @staticmethod
     def _transform_data(
-        data: Union[pd.Series, pd.DataFrame] = None,
-        transform: Dict[str, Callable] = None,
+        transform: Dict[str, Callable], data: Union[pd.Series, pd.DataFrame] = None
     ) -> Dict[str, Union[pd.Series, pd.DataFrame]]:
         """Transform original data for the use as right-hand-side variables.
 
