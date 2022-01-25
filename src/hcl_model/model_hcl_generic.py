@@ -135,7 +135,7 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
             for key, val in transformed_endog.items():
                 temp += val.iloc[-1, :] * beta_simulated[key]
 
-            transformed_exog = self._transform_all_data(exog=self._x_train.iloc[: self._nobs + j + 1])
+            transformed_exog = self._transform_all_data(exog=pd.concat([self._x_train, X]).iloc[: self._nobs + j + 1])
             exog_df = self._convert_transformed_dict_to_frame(transformed=transformed_exog)
             for key in exog_df.columns:
                 temp += exog_df[key].iloc[-1] * beta_simulated[key]
