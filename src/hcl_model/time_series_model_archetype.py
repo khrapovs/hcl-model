@@ -162,13 +162,13 @@ class TimeSeriesModelArchetype(ABC):
     def _prepare_data(self, endog: pd.Series = None, exog: pd.DataFrame = None) -> Tuple[pd.Series, pd.DataFrame]:
         return self._prepare_endog(endog=endog), self._prepare_exog(exog=exog)
 
-    def _prepare_endog(self, endog: Optional[pd.Series] = None) -> pd.Series:
+    def _prepare_endog(self, endog: pd.Series = None) -> pd.Series:
         if endog is not None:
             return endog.copy()
         else:
             return self._endog
 
-    def _prepare_exog(self, exog: Optional[pd.DataFrame] = None) -> pd.DataFrame:
+    def _prepare_exog(self, exog: pd.DataFrame = None) -> pd.DataFrame:
         if exog is not None:
             return exog.copy()
         else:
