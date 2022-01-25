@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Union
+from typing import List
 
 import numpy as np
 import pandas as pd
@@ -193,15 +193,6 @@ class TimeSeriesModelArchetype(ABC):
     @staticmethod
     def _get_num_observations(endog: pd.Series = None) -> int:
         return endog.shape[0]
-
-    def _get_out_sample_exog(self, num_steps: int = None) -> Union[pd.DataFrame, None]:
-        if self._x_train is not None:
-            idx = slice(
-                self._get_num_observations(self._y_train), self._get_num_observations(self._y_train) + num_steps
-            )
-            return self._x_train.iloc[idx]
-        else:
-            return None
 
     def _get_in_sample_data(self) -> pd.DataFrame:
         return pd.concat([self._y_train, self._x_train], axis=1)

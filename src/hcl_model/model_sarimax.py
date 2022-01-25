@@ -49,13 +49,15 @@ class SARIMAXModel(TimeSeriesModelArchetype):
     ) -> pd.DataFrame:
         nobs = self._get_num_observations(self._y_train)
         self._check_exogenous(exog=self._x_train, nobs=nobs, num_steps=num_steps)
-        forecast = self._fit_results.get_forecast(steps=num_steps, exog=self._get_out_sample_exog(num_steps=num_steps))
+        forecast = self._fit_results.get_forecast(steps=num_steps, exog=X)
         predictions = pd.DataFrame(forecast.predicted_mean.rename(self._get_endog_name())).rename_axis(
             index=self._y_train.index.name
         )
 
         if quantile_levels is not None:
-            quantiles = self._compute_prediction_quantiles_exact(num_steps=num_steps, quantile_levels=quantile_levels)
+            quantiles = self._compute_prediction_quantiles_exact(
+                num_steps=num_steps, quantile_levels=quantile_levels, X=X
+            )
             predictions = pd.concat([predictions, quantiles], axis=1)
 
         return self._add_trend(df=predictions)
@@ -97,8 +99,10 @@ class SARIMAXModel(TimeSeriesModelArchetype):
     def _get_residuals(self) -> pd.Series:
         return self._fit_results.resid
 
-    def _compute_prediction_quantiles_exact(self, num_steps: int, quantile_levels: List[float] = None) -> pd.DataFrame:
-        forecast = self._fit_results.get_forecast(steps=num_steps, exog=self._get_out_sample_exog(num_steps=num_steps))
+    def _compute_prediction_quantiles_exact(
+        self, num_steps: int, quantile_levels: List[float] = None, X: pd.DataFrame = None
+    ) -> pd.DataFrame:
+        forecast = self._fit_results.get_forecast(steps=num_steps, exog=X)
         out = dict()
         for alpha, q_name in zip(quantile_levels, self.get_quantile_names(quantile_levels)):
             if alpha < 50:
