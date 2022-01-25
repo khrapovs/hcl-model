@@ -31,15 +31,15 @@ class SARIMAXModel(TimeSeriesModelArchetype):
         self._seasonal_order = seasonal_order
         self._trend = trend
         self._enforce_stationarity = enforce_stationarity
-        self._exog = None
+        self._x_train = None
         self._trend_fit = None
 
     def fit(self, y: pd.Series, X: pd.DataFrame = None, **kwargs) -> SARIMAXModel:
-        self._endog, self._exog = self._prepare_data(endog=y, exog=X)
-        self._endog = self._remove_trend(self._endog)
+        self._y_train, self._x_train = self._prepare_data(endog=y, exog=X)
+        self._y_train = self._remove_trend(self._y_train)
         self._fit_results = SARIMAX(
-            self._endog,
-            exog=self._get_in_sample_exog(self._endog),
+            self._y_train,
+            exog=self._get_in_sample_exog(self._y_train),
             order=self._order,
             seasonal_order=self._seasonal_order,
             enforce_stationarity=self._enforce_stationarity,
@@ -50,12 +50,12 @@ class SARIMAXModel(TimeSeriesModelArchetype):
         self, num_steps: int, X: pd.DataFrame = None, quantile_levels: List[float] = None, **kwargs
     ) -> pd.DataFrame:
         if X is not None:
-            self._exog = pd.concat([self._exog, X])
-        nobs = self._get_num_observations(self._endog)
-        self._check_exogenous(exog=self._exog, nobs=nobs, num_steps=num_steps)
+            self._x_train = pd.concat([self._x_train, X])
+        nobs = self._get_num_observations(self._y_train)
+        self._check_exogenous(exog=self._x_train, nobs=nobs, num_steps=num_steps)
         forecast = self._fit_results.get_forecast(steps=num_steps, exog=self._get_out_sample_exog(num_steps=num_steps))
         predictions = pd.DataFrame(forecast.predicted_mean.rename(self._get_endog_name())).rename_axis(
-            index=self._endog.index.name
+            index=self._y_train.index.name
         )
 
         if quantile_levels is not None:
@@ -68,20 +68,20 @@ class SARIMAXModel(TimeSeriesModelArchetype):
         self, num_steps: int, num_simulations: int, y: pd.Series = None, X: pd.DataFrame = None, **kwargs
     ) -> pd.DataFrame:
         if X is not None:
-            self._exog = pd.concat([self._exog, X])
-        self._endog = self._remove_trend(self._endog)
-        nobs = self._get_num_observations(self._endog)
-        self._check_exogenous(exog=self._exog, nobs=nobs, num_steps=num_steps)
+            self._x_train = pd.concat([self._x_train, X])
+        self._y_train = self._remove_trend(self._y_train)
+        nobs = self._get_num_observations(self._y_train)
+        self._check_exogenous(exog=self._x_train, nobs=nobs, num_steps=num_steps)
         if self._fit_results is None:
-            self.fit(y=self._endog, exog=self._get_in_sample_exog(self._endog))
+            self.fit(y=self._y_train, exog=self._get_in_sample_exog(self._y_train))
 
         idx = slice(
-            self._get_num_observations(self._endog),
-            self._get_num_observations(self._endog) + num_steps,
+            self._get_num_observations(self._y_train),
+            self._get_num_observations(self._y_train) + num_steps,
         )
         sim_model = SARIMAX(
-            pd.Series(index=self._exog.iloc[idx].index, dtype=float),
-            exog=self._exog.iloc[idx],
+            pd.Series(index=self._x_train.iloc[idx].index, dtype=float),
+            exog=self._x_train.iloc[idx],
             order=self._order,
             seasonal_order=self._seasonal_order,
             enforce_stationarity=self._enforce_stationarity,
@@ -109,14 +109,14 @@ class SARIMAXModel(TimeSeriesModelArchetype):
                 out[q_name] = forecast.conf_int(alpha=2 * alpha / 100).iloc[:, 0]
             else:
                 out[q_name] = forecast.conf_int(alpha=2 * (100 - alpha) / 100).iloc[:, 1]
-        return pd.DataFrame(out).rename_axis(index=self._endog.index.name)
+        return pd.DataFrame(out).rename_axis(index=self._y_train.index.name)
 
     def _remove_trend(self, endog: pd.Series) -> pd.Series:
         if self._trend == "n":
             return endog
         else:
             name = endog.name
-            trend = add_trend(self._endog, trend=self._trend, prepend=False)
+            trend = add_trend(self._y_train, trend=self._trend, prepend=False)
             self._trend_fit = OLS(endog, trend.iloc[:, 1:]).fit()
             endog -= self._trend_fit.fittedvalues
             return endog.rename(name)
@@ -126,7 +126,7 @@ class SARIMAXModel(TimeSeriesModelArchetype):
             return df
         else:
             exog = add_trend(
-                pd.concat([self._endog, df[self._endog.name]]),
+                pd.concat([self._y_train, df[self._y_train.name]]),
                 trend=self._trend,
                 prepend=False,
                 has_constant="add",

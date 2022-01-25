@@ -19,8 +19,8 @@ class TimeSeriesModelArchetype(ABC):
 
     def __init__(self) -> None:
         self._fit_results = None
-        self._endog = pd.Series(dtype=float)
-        self._exog = pd.DataFrame()
+        self._y_train = None
+        self._x_train = None
 
     @abstractmethod
     def fit(self, y: pd.Series, X: pd.DataFrame = None, **kwargs):
@@ -111,14 +111,14 @@ class TimeSeriesModelArchetype(ABC):
 
         :return: Error as a float in percent.
         """
-        return ((self._endog - self._get_fitted_values()) / self._endog).abs().mean() * 100
+        return ((self._y_train - self._get_fitted_values()) / self._y_train).abs().mean() * 100
 
     def _get_rsquared(self) -> float:
         """Mean absolute percentage error on in-sample.
 
         :return: Error as a float in percent.
         """
-        return np.corrcoef(self._get_fitted_values(), self._endog.values)[0, 1] ** 2
+        return np.corrcoef(self._get_fitted_values(), self._y_train.values)[0, 1] ** 2
 
     def _get_residual_moment(self, degree: int = 1, center_first: bool = False) -> float:
         """Get residual moment.
@@ -165,13 +165,13 @@ class TimeSeriesModelArchetype(ABC):
         if endog is not None:
             return endog.copy()
         else:
-            return self._endog
+            return self._y_train
 
     def _prepare_exog(self, exog: pd.DataFrame = None) -> pd.DataFrame:
         if exog is not None:
             return exog.copy()
         else:
-            return self._exog
+            return self._x_train
 
     @staticmethod
     def _check_exogenous(exog: pd.DataFrame, nobs: int, num_steps: int) -> None:
@@ -185,30 +185,32 @@ class TimeSeriesModelArchetype(ABC):
             raise RuntimeError("Provided exogenous data does not cover the whole prediction horizon!")
 
     def _get_endog_name(self) -> str:
-        return self._endog.name
+        return self._y_train.name
 
     def _get_index_name(self) -> str:
-        return self._endog.index.name
+        return self._y_train.index.name
 
     @staticmethod
     def _get_num_observations(endog: pd.Series = None) -> int:
         return endog.shape[0]
 
     def _get_in_sample_exog(self, endog: pd.Series) -> Union[pd.DataFrame, None]:
-        if self._exog is not None:
-            return self._exog  # .loc[: self._get_num_observations(endog)]
+        if self._x_train is not None:
+            return self._x_train  # .loc[: self._get_num_observations(endog)]
         else:
             return None
 
     def _get_out_sample_exog(self, num_steps: int = None) -> Union[pd.DataFrame, None]:
-        if self._exog is not None:
-            idx = slice(self._get_num_observations(self._endog), self._get_num_observations(self._endog) + num_steps)
-            return self._exog.iloc[idx]
+        if self._x_train is not None:
+            idx = slice(
+                self._get_num_observations(self._y_train), self._get_num_observations(self._y_train) + num_steps
+            )
+            return self._x_train.iloc[idx]
         else:
             return None
 
     def _get_in_sample_data(self) -> pd.DataFrame:
-        return pd.concat([self._endog, self._get_in_sample_exog(self._endog)], axis=1)
+        return pd.concat([self._y_train, self._get_in_sample_exog(self._y_train)], axis=1)
 
     def _get_parameters(self) -> pd.Series:
         return self._fit_results.params
