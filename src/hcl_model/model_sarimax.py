@@ -60,17 +60,14 @@ class SARIMAXModel(TimeSeriesModelArchetype):
 
         return self._add_trend(df=predictions)
 
-    def _simulate(
-        self, num_steps: int, num_simulations: int, y: pd.Series = None, X: pd.DataFrame = None, **kwargs
-    ) -> pd.DataFrame:
+    def _simulate(self, num_steps: int, num_simulations: int, X: pd.DataFrame = None, **kwargs) -> pd.DataFrame:
         self._y_train = self._remove_trend(self._y_train)
         if self._fit_results is None:
             self.fit(y=self._y_train, exog=self._x_train)
 
-        idx = slice(self._nobs, self._nobs + num_steps)
         sim_model = SARIMAX(
-            pd.Series(index=self._x_train.iloc[idx].index, dtype=float),
-            exog=self._x_train.iloc[idx],
+            pd.Series(index=X.index, dtype=float),
+            exog=X,
             order=self._order,
             seasonal_order=self._seasonal_order,
             enforce_stationarity=self._enforce_stationarity,
