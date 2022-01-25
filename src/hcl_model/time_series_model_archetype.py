@@ -163,21 +163,6 @@ class TimeSeriesModelArchetype(ABC):
     def _get_residual_kurtosis(self) -> float:
         return self._get_residual_moment(degree=4, center_first=True) / (self._get_residual_std() ** 4)
 
-    def _compute_prediction_quantiles(
-        self, num_steps: int, num_simulations: int, quantile_levels: List[float] = None
-    ) -> pd.DataFrame:
-        """Compute prediction percentiles from simulations.
-
-        :param num_steps: number of points in the future that we want to simulate
-        :param num_simulations: number of independent simulations
-        :param quantile_levels: quantile levels
-        :return: quantiles
-        """
-        simulations = self.simulate(num_steps=num_steps, num_simulations=num_simulations)
-        quantiles = simulations.quantile(np.array(quantile_levels) / 100, axis=1).T
-        quantiles.columns = self.get_quantile_names(quantile_levels)
-        return quantiles
-
     @staticmethod
     def _check_exogenous(exog: pd.DataFrame, nobs: int, num_steps: int) -> None:
         """Check that provided exogenous data cover prediction horizon.
