@@ -60,6 +60,7 @@ class TimeSeriesModelArchetype(ABC):
         """
         if X is not None:
             self._x_train = pd.concat([self._x_train, X])
+        self._check_exogenous(exog=self._x_train, nobs=self._nobs, num_steps=num_steps)
         return self._predict(num_steps=num_steps, X=X, quantile_levels=quantile_levels, **kwargs)
 
     @abstractmethod

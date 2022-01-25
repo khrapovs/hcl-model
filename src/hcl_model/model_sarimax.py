@@ -47,7 +47,6 @@ class SARIMAXModel(TimeSeriesModelArchetype):
     def _predict(
         self, num_steps: int, X: pd.DataFrame = None, quantile_levels: List[float] = None, **kwargs
     ) -> pd.DataFrame:
-        self._check_exogenous(exog=self._x_train, nobs=self._nobs, num_steps=num_steps)
         forecast = self._fit_results.get_forecast(steps=num_steps, exog=X)
         predictions = pd.DataFrame(forecast.predicted_mean.rename(self._get_endog_name())).rename_axis(
             index=self._y_train.index.name

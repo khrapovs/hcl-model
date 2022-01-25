@@ -86,8 +86,6 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
         quantile_levels: List[float] = None,
         num_simulations: int = None,
     ) -> pd.DataFrame:
-        nobs = self._nobs
-        self._check_exogenous(exog=self._x_train, nobs=self._nobs, num_steps=num_steps)
         endog_updated = pd.concat(
             [
                 self._y_train,
