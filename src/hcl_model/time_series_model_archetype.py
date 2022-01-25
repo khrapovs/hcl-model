@@ -22,8 +22,20 @@ class TimeSeriesModelArchetype(ABC):
         self._y_train = None
         self._x_train = None
 
-    @abstractmethod
     def fit(self, y: pd.Series, X: pd.DataFrame = None, **kwargs):
+        """
+        Fit the model using some provided training data.
+
+        :param y: endogenous variable
+        :param X: exogenous explanatory variables
+        """
+        self._y_train = y.copy()
+        self._x_train = X.copy() if X is not None else None
+        self._fit(y=y, X=X, **kwargs)
+        return self
+
+    @abstractmethod
+    def _fit(self, y: pd.Series, X: pd.DataFrame = None, **kwargs) -> None:
         """
         Fit the model using some provided training data.
 

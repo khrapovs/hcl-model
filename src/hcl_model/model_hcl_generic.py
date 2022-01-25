@@ -73,15 +73,10 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
         else:
             self._exog_transform = exog_transform
 
-    def fit(
-        self, y: pd.Series, X: pd.DataFrame = None, weights: Union[Sequence, float] = 1.0, **kwargs
-    ) -> HandCraftedLinearModel:
-        self._y_train = y.copy()
-        self._x_train = X.copy() if X is not None else None
+    def _fit(self, y: pd.Series, X: pd.DataFrame = None, weights: Union[Sequence, float] = 1.0, **kwargs) -> None:
         transformed = self._transform_all_data(endog=self._y_train, exog=self._get_in_sample_exog(self._y_train))
         rhs_vars = self._convert_transformed_dict_to_frame(transformed=transformed)
         self._fit_results = WLS(endog=self._y_train, exog=rhs_vars, weights=weights, missing="drop").fit()
-        return self
 
     def predict(
         self,

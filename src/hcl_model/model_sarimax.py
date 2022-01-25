@@ -34,9 +34,7 @@ class SARIMAXModel(TimeSeriesModelArchetype):
         self._enforce_stationarity = enforce_stationarity
         self._trend_fit = None
 
-    def fit(self, y: pd.Series, X: pd.DataFrame = None, **kwargs) -> SARIMAXModel:
-        self._y_train = y.copy()
-        self._x_train = X.copy() if X is not None else None
+    def _fit(self, y: pd.Series, X: pd.DataFrame = None, **kwargs) -> None:
         self._y_train = self._remove_trend(self._y_train)
         self._fit_results = SARIMAX(
             self._y_train,
@@ -45,7 +43,6 @@ class SARIMAXModel(TimeSeriesModelArchetype):
             seasonal_order=self._seasonal_order,
             enforce_stationarity=self._enforce_stationarity,
         ).fit(disp=False)
-        return self
 
     def predict(
         self, num_steps: int, X: pd.DataFrame = None, quantile_levels: List[float] = None, **kwargs
