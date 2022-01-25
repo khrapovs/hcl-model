@@ -39,7 +39,12 @@ class TimeSeriesModelArchetype(ABC):
         pass
 
     def predict(
-        self, num_steps: int, X: pd.DataFrame = None, quantile_levels: List[float] = None, **kwargs
+        self,
+        num_steps: int,
+        X: pd.DataFrame = None,
+        quantile_levels: List[float] = None,
+        num_simulations: int = None,
+        **kwargs
     ) -> pd.DataFrame:
         """
         Forecast the values and prediction intervals
@@ -61,7 +66,13 @@ class TimeSeriesModelArchetype(ABC):
         if X is not None:
             self._x_train = pd.concat([self._x_train, X])
         self._check_exogenous(exog=self._x_train, nobs=self._nobs, num_steps=num_steps)
-        return self._predict(num_steps=num_steps, X=X, quantile_levels=quantile_levels, **kwargs)
+        predictions = self._predict(num_steps=num_steps, X=X, quantile_levels=quantile_levels, **kwargs)
+        if quantile_levels is not None:
+            quantiles = self._compute_prediction_quantiles(
+                num_steps=num_steps, quantile_levels=quantile_levels, X=X, num_simulations=num_simulations
+            )
+            predictions = pd.concat([predictions, quantiles], axis=1)
+        return self._add_trend(df=predictions)
 
     @abstractmethod
     def _predict(
@@ -196,3 +207,7 @@ class TimeSeriesModelArchetype(ABC):
     @staticmethod
     def get_quantile_names(quantile_levels: List[float]) -> List[str]:
         return ["prediction_quantile{}".format(x) for x in quantile_levels]
+
+    @abstractmethod
+    def _add_trend(self, df: pd.DataFrame) -> pd.DataFrame:
+        pass

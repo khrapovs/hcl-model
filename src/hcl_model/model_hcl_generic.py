@@ -91,15 +91,7 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
             rhs_vars = self._convert_transformed_dict_to_frame(transformed=transformed).iloc[-1, :]
             endog_updated.iloc[self._nobs + j] = np.dot(rhs_vars, self._get_parameters())
 
-        predictions = endog_updated.iloc[self._nobs :].to_frame().rename_axis(index=self._y_train.index.name)
-
-        if quantile_levels is not None:
-            quantiles = self._compute_prediction_quantiles(
-                num_steps=num_steps, num_simulations=num_simulations, quantile_levels=quantile_levels, X=X
-            )
-            predictions = pd.concat([predictions, quantiles], axis=1)
-
-        return predictions
+        return endog_updated.iloc[self._nobs :].to_frame().rename_axis(index=self._y_train.index.name)
 
     def _simulate(self, num_steps: int, num_simulations: int, X: pd.DataFrame = None, **kwargs) -> pd.DataFrame:
         num_params = self._get_parameters().shape[0]
@@ -224,3 +216,6 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
     @staticmethod
     def _init_transform(name: str, transform: Dict[str, Callable] = None) -> Optional[Dict[str, Callable]]:
         return {name: lambda x: x} if transform is None else transform
+
+    def _add_trend(self, df: pd.DataFrame) -> pd.DataFrame:
+        return df

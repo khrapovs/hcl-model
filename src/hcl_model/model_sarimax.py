@@ -45,20 +45,14 @@ class SARIMAXModel(TimeSeriesModelArchetype):
         ).fit(disp=False)
 
     def _predict(
-        self, num_steps: int, X: pd.DataFrame = None, quantile_levels: List[float] = None, **kwargs
+        self, num_steps: int, X: pd.DataFrame = None, quantile_levels: List[float] = None, num_simulations: int = None
     ) -> pd.DataFrame:
-        predictions = (
+        return (
             self._fit_results.get_forecast(steps=num_steps, exog=X)
             .predicted_mean.rename(self._get_endog_name())
             .to_frame()
             .rename_axis(index=self._y_train.index.name)
         )
-
-        if quantile_levels is not None:
-            quantiles = self._compute_prediction_quantiles(num_steps=num_steps, quantile_levels=quantile_levels, X=X)
-            predictions = pd.concat([predictions, quantiles], axis=1)
-
-        return self._add_trend(df=predictions)
 
     def _simulate(self, num_steps: int, num_simulations: int, X: pd.DataFrame = None, **kwargs) -> pd.DataFrame:
         self._y_train = self._remove_trend(self._y_train)
