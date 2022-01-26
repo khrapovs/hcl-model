@@ -1,11 +1,11 @@
-import abc
-from typing import List, Tuple, Union, Optional
+from abc import ABC, abstractmethod
+from typing import List
 
 import numpy as np
 import pandas as pd
 
 
-class TimeSeriesModelArchetype(metaclass=abc.ABCMeta):
+class TimeSeriesModelArchetype(ABC):
     """Time Series Model Archetype."""
 
     lbl_r2 = "rsquared"
@@ -19,35 +19,41 @@ class TimeSeriesModelArchetype(metaclass=abc.ABCMeta):
 
     def __init__(self) -> None:
         self._fit_results = None
-        self._endog = pd.Series(dtype=float)
-        self._exog = pd.DataFrame()
+        self._y_train = None
+        self._x_train = None
 
-    @abc.abstractmethod
-    def fit(self, endog: pd.Series, exog: pd.DataFrame = None, **kwargs):
+    def fit(self, y: pd.Series, X: pd.DataFrame = None, **kwargs):
         """
         Fit the model using some provided training data.
 
-        :param endog: endogenous variable
-        :param exog: exogenous explanatory variables
+        :param y: endogenous variable
+        :param X: exogenous explanatory variables
         """
+        self._y_train = y.copy()
+        self._x_train = X.copy() if X is not None else None
+        self._fit(y=y, X=X, **kwargs)
+        return self
 
-    @abc.abstractmethod
+    @abstractmethod
+    def _fit(self, y: pd.Series, X: pd.DataFrame = None, **kwargs) -> None:
+        pass
+
     def predict(
         self,
         num_steps: int,
-        endog: pd.Series = None,
-        exog: pd.DataFrame = None,
+        X: pd.DataFrame = None,
         quantile_levels: List[float] = None,
+        num_simulations: int = None,
         **kwargs
     ) -> pd.DataFrame:
         """
         Forecast the values and prediction intervals
 
         :param num_steps: number of point in the future that we want to forecast
-        :param endog: endogenous variables, if not provided the model should use the data provided into the fit() method
-        :param exog: exogenous variables should cover the whole prediction horizon
+        :param X: exogenous variables should cover the whole prediction horizon
         :param quantile_levels: list of desired prediction interval levels between 0 and 100 (in percentages).
             If not provided, no confidence interval will be given as output
+        :param num_simulations: number of simulations for simulation-based prediction intervals
         :returns: A DataFrame containing values and prediction intervals.
 
         Example of output from `num_steps=2` and `quantile_levels=[5, 95]`:
@@ -58,20 +64,42 @@ class TimeSeriesModelArchetype(metaclass=abc.ABCMeta):
             2019-06-07   102      75     127
             2019-06-14   305     206     278
         """
+        self._check_exogenous(exog=X, nobs=self._nobs, num_steps=num_steps)
+        predictions = self._predict(num_steps=num_steps, X=X, quantile_levels=quantile_levels, **kwargs)
+        if quantile_levels is not None:
+            quantiles = self._compute_prediction_quantiles(
+                num_steps=num_steps, quantile_levels=quantile_levels, X=X, num_simulations=num_simulations
+            )
+            predictions = pd.concat([predictions, quantiles], axis=1)
+        return self._add_trend(df=predictions)
 
-    @abc.abstractmethod
-    def simulate(
-        self, num_steps: int, num_simulations: int, endog: pd.Series = None, exog: pd.DataFrame = None, **kwargs
+    @abstractmethod
+    def _predict(
+        self, num_steps: int, X: pd.DataFrame = None, quantile_levels: List[float] = None, **kwargs
     ) -> pd.DataFrame:
+        pass
+
+    def simulate(self, num_steps: int, num_simulations: int, X: pd.DataFrame = None, **kwargs) -> pd.DataFrame:
         """
         Simulate `num_simulations` realizations of the next `num_steps` values
 
         :param num_steps: number of points in the future that we want to simulate
         :param num_simulations: number of independent simulations
-        :param endog: endogenous variables, if not provided the model should use the data provided into the fit() method
-        :param exog: exogenous variables
+        :param X: exogenous variables
         :return: A DataFrame containing simulations
         """
+        self._check_exogenous(exog=X, nobs=self._nobs, num_steps=num_steps)
+        return self._simulate(num_steps=num_steps, num_simulations=num_simulations, X=X, **kwargs)
+
+    @abstractmethod
+    def _simulate(self, num_steps: int, num_simulations: int, **kwargs) -> pd.DataFrame:
+        pass
+
+    @abstractmethod
+    def _compute_prediction_quantiles(
+        self, num_steps: int, num_simulations: int = None, quantile_levels: List[float] = None, X: pd.DataFrame = None
+    ) -> pd.DataFrame:
+        pass
 
     def summary(self) -> pd.Series:
         """A summary of in-sample model performance KPIs.
@@ -91,21 +119,21 @@ class TimeSeriesModelArchetype(metaclass=abc.ABCMeta):
             }
         )
 
-    @abc.abstractmethod
+    @abstractmethod
     def _get_aic(self) -> float:
         """Akaike Information Criterion of a model fit.
 
         :return: AIC statistic as a float.
         """
 
-    @abc.abstractmethod
+    @abstractmethod
     def _get_fitted_values(self) -> pd.Series:
         """get fitted values
 
         :return: One point ahead forecasts on the in-sample period which are the "fitted values" in time series context.
         """
 
-    @abc.abstractmethod
+    @abstractmethod
     def _get_residuals(self) -> pd.Series:
         """Get residuals
 
@@ -117,14 +145,14 @@ class TimeSeriesModelArchetype(metaclass=abc.ABCMeta):
 
         :return: Error as a float in percent.
         """
-        return ((self._endog - self._get_fitted_values()) / self._endog).abs().mean() * 100
+        return ((self._y_train - self._get_fitted_values()) / self._y_train).abs().mean() * 100
 
     def _get_rsquared(self) -> float:
         """Mean absolute percentage error on in-sample.
 
         :return: Error as a float in percent.
         """
-        return np.corrcoef(self._get_fitted_values(), self._endog.values)[0, 1] ** 2
+        return np.corrcoef(self._get_fitted_values(), self._y_train.values)[0, 1] ** 2
 
     def _get_residual_moment(self, degree: int = 1, center_first: bool = False) -> float:
         """Get residual moment.
@@ -149,75 +177,27 @@ class TimeSeriesModelArchetype(metaclass=abc.ABCMeta):
     def _get_residual_kurtosis(self) -> float:
         return self._get_residual_moment(degree=4, center_first=True) / (self._get_residual_std() ** 4)
 
-    def _compute_prediction_quantiles(
-        self, num_steps: int, num_simulations: int, quantile_levels: List[float] = None
-    ) -> pd.DataFrame:
-        """Compute prediction percentiles from simulations.
-
-        :param num_steps: number of points in the future that we want to simulate
-        :param num_simulations: number of independent simulations
-        :param quantile_levels: quantile levels
-        :return: quantiles
-        """
-        simulations = self.simulate(num_steps=num_steps, num_simulations=num_simulations)
-        quantiles = simulations.quantile(np.array(quantile_levels) / 100, axis=1).T
-        quantiles.columns = self.get_quantile_names(quantile_levels)
-        return quantiles
-
-    def _prepare_data(self, endog: pd.Series = None, exog: pd.DataFrame = None) -> Tuple[pd.Series, pd.DataFrame]:
-        return self._prepare_endog(endog=endog), self._prepare_exog(exog=exog)
-
-    def _prepare_endog(self, endog: Optional[pd.Series] = None) -> pd.Series:
-        if endog is not None:
-            return endog.copy()
-        else:
-            return self._endog
-
-    def _prepare_exog(self, exog: Optional[pd.DataFrame] = None) -> pd.DataFrame:
-        if exog is not None:
-            return exog.copy()
-        else:
-            return self._exog
-
-    @staticmethod
-    def _check_exogenous(exog: pd.DataFrame, nobs: int, num_steps: int):
+    def _check_exogenous(self, nobs: int, num_steps: int, exog: pd.DataFrame = None) -> None:
         """Check that provided exogenous data cover prediction horizon.
 
         :param nobs: the number of observations
         :param num_steps: the number of steps in the future we want to make forecast of
+        :param exog: exogenous data
         :raise RuntimeError:
         """
-        if exog is not None and exog.shape[0] < nobs + num_steps:
+        x_train_and_test = pd.concat([self._x_train, exog]) if exog is not None else self._x_train
+        if x_train_and_test is not None and x_train_and_test.shape[0] < nobs + num_steps:
             raise RuntimeError("Provided exogenous data does not cover the whole prediction horizon!")
 
     def _get_endog_name(self) -> str:
-        return self._endog.name
+        return self._y_train.name
 
     def _get_index_name(self) -> str:
-        return self._endog.index.name
+        return self._y_train.index.name
 
-    @staticmethod
-    def _get_num_observations(endog: pd.Series = None) -> int:
-        return endog.shape[0]
-
-    def _get_in_sample_exog(self, endog: pd.Series) -> Union[pd.DataFrame, None]:
-        if self._exog is not None:
-            return self._exog.iloc[: self._get_num_observations(endog)]
-        else:
-            return None
-
-    def _get_out_sample_exog(self, num_steps: int = None) -> Union[pd.DataFrame, None]:
-        if self._exog is not None:
-            idx = slice(
-                self._get_num_observations(self._endog),
-                self._get_num_observations(self._endog) + num_steps,
-            )
-            return self._exog.iloc[idx]
-        else:
-            return None
-
-    def _get_in_sample_data(self) -> pd.DataFrame:
-        return pd.concat([self._endog, self._get_in_sample_exog(self._endog)], axis=1)
+    @property
+    def _nobs(self) -> int:
+        return self._y_train.shape[0]
 
     def _get_parameters(self) -> pd.Series:
         return self._fit_results.params
@@ -225,3 +205,7 @@ class TimeSeriesModelArchetype(metaclass=abc.ABCMeta):
     @staticmethod
     def get_quantile_names(quantile_levels: List[float]) -> List[str]:
         return ["prediction_quantile{}".format(x) for x in quantile_levels]
+
+    @abstractmethod
+    def _add_trend(self, df: pd.DataFrame) -> pd.DataFrame:
+        pass
