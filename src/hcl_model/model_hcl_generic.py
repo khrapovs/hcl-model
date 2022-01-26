@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import List, Union, Sequence, Dict, Callable, Optional
 
 import numpy as np
@@ -60,81 +62,38 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
     lbl_original_endog = "original_endog"
     lbl_original_exog = "original_exog"
 
-    def __init__(
-        self,
-        endog_transform: Optional[Dict[str, Callable]] = None,
-        exog_transform: Optional[Dict[str, Callable]] = None,
-    ):
+    def __init__(self, endog_transform: Dict[str, Callable] = None, exog_transform: Dict[str, Callable] = None) -> None:
         super().__init__()
-        if endog_transform is None:
-            self._endog_transform = {self.lbl_original_endog: lambda x: x}
-        else:
-            self._endog_transform = endog_transform
-        if exog_transform is None:
-            self._exog_transform = {self.lbl_original_exog: lambda x: x}
-        else:
-            self._exog_transform = exog_transform
-        # statsmodels object with model fit results
-        self._fit_results = None
-        # empty Series
-        self._endog = pd.Series(dtype=float)
-        self._exog = pd.DataFrame()
+        self._endog_transform = self._init_transform(name=self.lbl_original_endog, transform=endog_transform)
+        self._exog_transform = self._init_transform(name=self.lbl_original_exog, transform=exog_transform)
 
-    def fit(self, endog: pd.Series, exog: pd.DataFrame = None, weights: Union[Sequence, float] = 1.0, **kwargs):
-        self._endog, self._exog = self._prepare_data(endog=endog, exog=exog)
-        transformed = self._transform_all_data(endog=self._endog, exog=self._get_in_sample_exog(self._endog))
+    def _fit(self, y: pd.Series, X: pd.DataFrame = None, weights: Union[Sequence, float] = 1.0) -> None:
+        transformed = self._transform_all_data(endog=self._y_train, exog=self._x_train)
         rhs_vars = self._convert_transformed_dict_to_frame(transformed=transformed)
-        self._fit_results = WLS(endog=self._endog, exog=rhs_vars, weights=weights, missing="drop").fit()
+        self._fit_results = WLS(endog=self._y_train, exog=rhs_vars, weights=weights, missing="drop").fit()
 
-    def predict(
+    def _predict(
         self,
         num_steps: int,
-        endog: pd.Series = None,
-        exog: pd.DataFrame = None,
+        X: pd.DataFrame = None,
         weights: Union[Sequence, float] = 1.0,
         quantile_levels: List[float] = None,
         num_simulations: int = None,
-        **kwargs
     ) -> pd.DataFrame:
-        self._endog, self._exog = self._prepare_data(endog=endog, exog=exog)
-        nobs = self._get_num_observations(self._endog)
-        self._check_exogenous(exog=exog, nobs=nobs, num_steps=num_steps)
         endog_updated = pd.concat(
-            [self._endog, pd.Series(np.empty(num_steps), name=self._get_endog_name(), index=self._exog.index[nobs:])]
+            [self._y_train, pd.Series(np.empty(num_steps), name=self._get_endog_name(), index=X.index)]
         )
-
+        x_train_and_test = pd.concat([self._x_train, X])
         for j in range(num_steps):
             transformed = self._transform_all_data(
-                endog=endog_updated[: nobs + j + 1],
-                exog=self._exog.iloc[: nobs + j + 1],
+                endog=endog_updated[: self._nobs + j + 1], exog=x_train_and_test.iloc[: self._nobs + j + 1]
             )
             rhs_vars = self._convert_transformed_dict_to_frame(transformed=transformed).iloc[-1, :]
-            endog_updated.iloc[nobs + j] = np.dot(rhs_vars, self._get_parameters())
+            endog_updated.iloc[self._nobs + j] = np.dot(rhs_vars, self._get_parameters())
 
-        predictions = endog_updated.iloc[nobs:].to_frame().rename_axis(index=self._endog.index.name)
+        return endog_updated.iloc[self._nobs :].to_frame().rename_axis(index=self._y_train.index.name)
 
-        if quantile_levels is not None:
-            quantiles = self._compute_prediction_quantiles(
-                num_steps=num_steps,
-                num_simulations=num_simulations,
-                quantile_levels=quantile_levels,
-            )
-            predictions = pd.concat([predictions, quantiles], axis=1)
-
-        return predictions
-
-    def simulate(
-        self,
-        num_steps: int,
-        num_simulations: int,
-        endog: pd.Series = None,
-        exog: pd.DataFrame = None,
-        weights: Union[Sequence, float] = 1.0,
-        **kwargs
-    ) -> pd.DataFrame:
-        self._endog, self._exog = self._prepare_data(endog=endog, exog=exog)
-        nobs = self._get_num_observations(self._endog)
-        self._check_exogenous(exog=self._exog, nobs=nobs, num_steps=num_steps)
+    def _simulate(self, num_steps: int, num_simulations: int, X: pd.DataFrame = None, **kwargs) -> pd.DataFrame:
         num_params = self._get_parameters().shape[0]
         simulation = np.empty((num_steps, num_simulations))
 
@@ -151,35 +110,41 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
         beta_simulated = pd.DataFrame(beta_simulated, columns=self._fit_results.params.index)
         # simulate innovations for the right hand side of the model
         innovation = np.random.normal(
-            loc=0,
-            scale=self._fit_results.mse_resid ** 0.5,
-            size=(num_steps, num_simulations),
+            loc=0, scale=self._fit_results.mse_resid ** 0.5, size=(num_steps, num_simulations)
         )
 
         # stack observed endogenous series and empty container for future simulations
         # Series of length (nobs + num_steps)
-        endog_updated = self._endog.append(pd.Series(np.empty(num_steps)), ignore_index=True)
+        endog_updated = self._y_train.append(pd.Series(np.empty(num_steps)), ignore_index=True)
         # DataFrame (nobs + num_steps) x num_simulations
         endog_updated = pd.concat([endog_updated] * num_simulations, axis=1)
 
         # loop over horizon
         for j in range(num_steps):
-            transformed_endog = self._transform_all_data(endog=endog_updated.iloc[: nobs + j + 1])
+            transformed_endog = self._transform_all_data(endog=endog_updated.iloc[: self._nobs + j + 1])
             # apply model recursion plus innovation
             temp = 0
             for key, val in transformed_endog.items():
                 temp += val.iloc[-1, :] * beta_simulated[key]
 
-            transformed_exog = self._transform_all_data(exog=self._exog.iloc[: nobs + j + 1])
+            transformed_exog = self._transform_all_data(exog=pd.concat([self._x_train, X]).iloc[: self._nobs + j + 1])
             exog_df = self._convert_transformed_dict_to_frame(transformed=transformed_exog)
             for key in exog_df.columns:
                 temp += exog_df[key].iloc[-1] * beta_simulated[key]
 
             simulation[j] = temp + innovation[j]
             # update out-of-sample endogenous series with simulated value
-            endog_updated.loc[nobs + j] = simulation[j]
+            endog_updated.loc[self._nobs + j] = simulation[j]
 
-        return pd.DataFrame(simulation, index=self._exog.index[nobs:])
+        return pd.DataFrame(simulation, index=X.index)
+
+    def _compute_prediction_quantiles(
+        self, num_steps: int, num_simulations: int = None, quantile_levels: List[float] = None, X: pd.DataFrame = None
+    ) -> pd.DataFrame:
+        simulations = self.simulate(num_steps=num_steps, num_simulations=num_simulations, X=X)
+        quantiles = simulations.quantile(np.array(quantile_levels) / 100, axis=1).T
+        quantiles.columns = self.get_quantile_names(quantile_levels)
+        return quantiles
 
     def _get_rsquared(self) -> float:
         return self._fit_results.rsquared
@@ -195,8 +160,7 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
 
     @staticmethod
     def _transform_data(
-        data: Union[pd.Series, pd.DataFrame] = None,
-        transform: Dict[str, Callable] = None,
+        transform: Dict[str, Callable], data: Union[pd.Series, pd.DataFrame] = None
     ) -> Dict[str, Union[pd.Series, pd.DataFrame]]:
         """Transform original data for the use as right-hand-side variables.
 
@@ -241,3 +205,10 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
             return pd.concat(out, axis=1)
         else:
             return pd.DataFrame()
+
+    @staticmethod
+    def _init_transform(name: str, transform: Dict[str, Callable] = None) -> Optional[Dict[str, Callable]]:
+        return {name: lambda x: x} if transform is None else transform
+
+    def _add_trend(self, df: pd.DataFrame) -> pd.DataFrame:
+        return df
