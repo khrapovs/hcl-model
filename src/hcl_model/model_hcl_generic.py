@@ -67,7 +67,7 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
         self._endog_transform = self._init_transform(name=self.lbl_original_endog, transform=endog_transform)
         self._exog_transform = self._init_transform(name=self.lbl_original_exog, transform=exog_transform)
 
-    def _fit(self, y: pd.Series, X: pd.DataFrame = None, weights: Union[Sequence, float] = 1.0) -> None:
+    def _fit(self, weights: Union[Sequence, float] = 1.0) -> None:
         transformed = self._transform_all_data(endog=self._y_train, exog=self._x_train)
         rhs_vars = self._convert_transformed_dict_to_frame(transformed=transformed)
         self._fit_results = WLS(endog=self._y_train, exog=rhs_vars, weights=weights, missing="drop").fit()

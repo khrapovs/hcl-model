@@ -31,11 +31,11 @@ class TimeSeriesModelArchetype(ABC):
         """
         self._y_train = y.copy()
         self._x_train = X.copy() if X is not None else None
-        self._fit(y=y, X=X, **kwargs)
+        self._fit(**kwargs)
         return self
 
     @abstractmethod
-    def _fit(self, y: pd.Series, X: pd.DataFrame = None, **kwargs) -> None:
+    def _fit(self, **kwargs) -> None:
         pass
 
     def predict(
