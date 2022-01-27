@@ -34,7 +34,7 @@ class SARIMAXModel(TimeSeriesModelArchetype):
         self._enforce_stationarity = enforce_stationarity
         self._trend_fit = None
 
-    def _fit(self, y: pd.Series, X: pd.DataFrame = None, **kwargs) -> None:
+    def _fit(self, **kwargs) -> None:
         self._y_train = self._remove_trend(self._y_train)
         self._fit_results = SARIMAX(
             self._y_train,
