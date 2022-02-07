@@ -1,5 +1,9 @@
 ## Changelog
 
+### Unreleased
+#### Added
+- `sklearn` compliant transformer `EstimatorToTransformer` in `hcl_model.transformers.estimator_to_transformer`. Effectively, it replaces `predict` method with `transform` so that the object is usable as an intermediate step in `Pipeline`.
+
 ### 0.4.0 (2022-01-26)
 - Rename arguments: `exog` into `X`, and `endog` into `y`. This is done to comply with [`sklearn`](https://scikit-learn.org/stable/developers/develop.html) general interface.
 - Now `.fit` should be fed only with past data, and `.predict` only with future data.
