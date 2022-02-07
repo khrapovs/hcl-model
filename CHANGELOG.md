@@ -2,10 +2,13 @@
 
 ### Unreleased
 #### Added
-- A replacement for `sklearn.pipeline.FeatureUnion`: `DatetimeIndexedFeatureUnion` in `hcl_model.transformers.feature_union`.
-- A replacement for `sklearn.pipeline.make_union`: `make_union_of_datetime_indexed_features` in `hcl_model.transformers.feature_union`.
+- `sklearn` compliant transformer `TargetOutlierCorrectionTransformer` in `hcl_model.transformers.outlier_correction`. Read documentation in `docs/data_preprocessing.md`.
+- `sklearn` compliant transformer `EstimatorToTransformer` in `hcl_model.transformers.estimator_to_transformer`. Effectively, it replaces `predict` method with `transform` so that the object is usable as an intermediate step in `Pipeline`.
 - `sklearn` compliant transformer `TargetStructuralBreakCorrectionTransformer` in `hcl_model.transformers.structural_breaks`. It uses [`ruptures` package](https://github.com/deepcharles/ruptures/) to correct structural breaks in `X` data.
 - `sklearn` compliant transformer `EstimatorToTransformer` in `hcl_model.transformers.estimator_to_transformer`. Effectively, it replaces `predict` method with `transform` so that the object is usable as an intermediate step in `Pipeline`.
+- A replacement for `sklearn.pipeline.FeatureUnion`: `DatetimeIndexedFeatureUnion` in `hcl_model.transformers.feature_union`.
+- A replacement for `sklearn.pipeline.make_union`: `make_union_of_datetime_indexed_features` in `hcl_model.transformers.feature_union`.
+- Move utility functions from `utils.py` to a separate module `utils` with `.py` file per function.
 
 ### 0.4.0 (2022-01-26)
 - Rename arguments: `exog` into `X`, and `endog` into `y`. This is done to comply with [`sklearn`](https://scikit-learn.org/stable/developers/develop.html) general interface.
