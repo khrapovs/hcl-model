@@ -6,6 +6,7 @@ theme:
 nav:
   - Home: index.md
   - Math: hcl_model_math.md
+  - Data Preprocessing: data_preprocessing.md
 
 markdown_extensions:
   - pymdownx.arithmatex:
