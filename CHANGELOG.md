@@ -2,6 +2,8 @@
 
 ### Unreleased
 #### Added
+- A replacement for `sklearn.pipeline.FeatureUnion`: `DatetimeIndexedFeatureUnion` in `hcl_model.transformers.feature_union`.
+- A replacement for `sklearn.pipeline.make_union`: `make_union_of_datetime_indexed_features` in `hcl_model.transformers.feature_union`.
 - `sklearn` compliant transformer `EstimatorToTransformer` in `hcl_model.transformers.estimator_to_transformer`. Effectively, it replaces `predict` method with `transform` so that the object is usable as an intermediate step in `Pipeline`.
 
 ### 0.4.0 (2022-01-26)
