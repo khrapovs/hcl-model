@@ -20,7 +20,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Build wheel
         run: |
-          python -m build
+          python -m pip install build
+          python -m build --wheel --sdist --outdir dist
       - name: Store wheels
         uses: actions/upload-artifact@v2
         with:
