@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Data Preprocessing - hcl-model</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Data Preprocessing";
+    var mkdocs_page_input_path = "data_preprocessing.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> hcl-model</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../hcl_model_math/">Math</a>
+                    </li>
+                </ul>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">Data Preprocessing</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#outlier-identification-and-correction">Outlier identification and correction</a>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">hcl-model</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Data Preprocessing</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="data-preprocessing-methods">Data preprocessing methods</h1>
+<p>In the following, we briefly describe different implemented methods for data preprocessing.</p>
+<p>Basic notation: Let <span class="arithmatex">\(Y=(Y_t)_{1,\ldots,t}\)</span> be the time series and <span class="arithmatex">\(Y_t\)</span> the observation at time point t.</p>
+<h2 id="outlier-identification-and-correction">Outlier identification and correction</h2>
+<p>For identification of outliers we do the following. </p>
+<ol>
+<li>Smooth the time series <span class="arithmatex">\(Y\)</span> by applying a rolling median with a fixed window size and then directly apply a exponential weighted moving average. Let <span class="arithmatex">\(\hat{Y}\)</span> be the smoothed time series with values <span class="arithmatex">\(\hat{Y}_t\)</span> at time point t.</li>
+<li>Compute the residuals <span class="arithmatex">\(R_t = Y_t - \hat{Y}_t\)</span> for all <span class="arithmatex">\(t\in\{1,\ldots,T\}\)</span>. Let <span class="arithmatex">\(R = (R_t)_{1,\ldots,T}\)</span> be the residual time series.</li>
+<li>Compute the inter quantile range <span class="arithmatex">\(iqr = q_{0.75}(R) - q_{0.25}(R)\)</span>, which is the difference between the <span class="arithmatex">\(0.75\)</span> quantile and the <span class="arithmatex">\(0.25\)</span> quantile of the residual series.</li>
+<li>Compute the upper limit and lower limit time series, namely <span class="arithmatex">\(UL = (UL_t)_{1,\ldots,T}\)</span> with <span class="arithmatex">\(UL_t = \hat{Y}_t + S \cdot iqr\)</span> and <span class="arithmatex">\(LL = (LL_t)_{1,\ldots,T}\)</span> with <span class="arithmatex">\(LL_t = \hat{Y}_t - S \cdot iqr\)</span>. Here, <span class="arithmatex">\(S &gt; 0\)</span> is a fixed value, the so called six sigma multiplier.</li>
+<li>The identified potential outliers are all values <span class="arithmatex">\((Y_t)_{t \in I_{outlier}}\)</span> with <span class="arithmatex">\(I_{outlier}=\{i \in \{1, \ldots, T\}| Y_t &gt; UL_t\text{ or }Y_t &lt; LL_t\}\)</span></li>
+</ol>
+<p>If we identify any observation as potential outlier, then we correct the outliers by one of the following methods.</p>
+<ol>
+<li>Trim method: </li>
+<li>For all values <span class="arithmatex">\(Y_t\)</span> with <span class="arithmatex">\(Y_t &gt; UL_t\)</span>, set <span class="arithmatex">\(Y_t = UL_t\)</span> </li>
+<li>
+<p>For all values <span class="arithmatex">\(Y_t\)</span> with <span class="arithmatex">\(Y_t &lt; LL_t\)</span>, set <span class="arithmatex">\(Y_t = LL_t\)</span> </p>
+</li>
+<li>
+<p>Interpolation method: </p>
+</li>
+<li>For all values <span class="arithmatex">\(Y_t\)</span> with <span class="arithmatex">\(t \in I_{outlier}\)</span>, set <span class="arithmatex">\(Y_t = NA\)</span></li>
+<li>Apply a linear interpolation in order to impute the NA values</li>
+</ol>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="../hcl_model_math/" class="btn btn-neutral" title="Math"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../hcl_model_math/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="https://polyfill.io/v3/polyfill.min.js?features=es6" defer></script>
+      <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

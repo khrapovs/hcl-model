@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Math - hcl-model</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Math";
+    var mkdocs_page_input_path = "hcl_model_math.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> hcl-model</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                    </li>
+                </ul>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">Math</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#motivation">Motivation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#model-definition">Model Definition</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#model-estimation">Model Estimation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#forecasting">Forecasting</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#prediction-intervals">Prediction Intervals</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#model-mixing">Model Mixing</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#model-components">Model Components</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#linear-trend">Linear Trend</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#seasonality">Seasonality</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#seasonality-with-dummies">Seasonality with Dummies</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#seasonality-with-splines">Seasonality with Splines</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#weighted-average-smoothing-components">Weighted Average (Smoothing) Components</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#structural-changes">Structural Changes</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../data_preprocessing/">Data Preprocessing</a>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">hcl-model</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Math</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="hand-crafted-linear-model">Hand Crafted Linear Model</h1>
+<h2 id="motivation">Motivation</h2>
+<p>In this document we present a flexible class of autoregressive time series models with exogenous variables. There are several facts that motivate the new model:</p>
+<ol>
+<li>
+<p><strong>SARIMAX models are very slow to fit.</strong> In order to fit parameters of a single SARIMAX model, one needs to find an optimum of a highly non-linear objective function (likelihood, or something even more complicated in the case of Kalman filter based algorithm). For producing one forecast for one time series this is definitely not an issue. But when it becomes necessary to redo the fitting hundreds or even thousands of times (e.g. cross-validation for multiple time series), it becomes a heavy burden on computation time. Finally, exploration of alternative model specifications becomes very costly in a fast development environment.</p>
+</li>
+<li>
+<p><strong>SARIMAX models are not flexible enough.</strong> The definition of <span class="arithmatex">\(AR(p)\)</span> model allows inclusion of only last <span class="arithmatex">\(p\)</span> lags in the model recursion. It does not allow for a combination of, say, lags 1, 4, 26, and 52. <span class="arithmatex">\(SARIMA(p,d,q)\times(P,D,Q)[s]\)</span> implicitly includes lags <span class="arithmatex">\(s\)</span> and some more. This may be sufficient to cover cover dependence on, for example, first <span class="arithmatex">\(p\)</span> lags and more distant lag <span class="arithmatex">\(s\)</span>, but still nothing in between.</p>
+</li>
+<li>
+<p><strong>SARIMAX may be an overkill in forecasting.</strong> The optimal forecast derived from <span class="arithmatex">\(SARIMAX\)</span> model includes only lags of the dependent variable and exogenous variables, but not moving average component since its expectation is zero anyway. The moving average component affects the point forecast only indirectly by changing the parameters of the model. The main purpose of the MA component is to address autocorrelation in the residuals and, therefore, properly model their covariance matrix.</p>
+</li>
+</ol>
+<h2 id="model-definition">Model Definition</h2>
+<p>The model in its most general formulation is simply a multivariate linear regression:
+$$
+Y_{t+m}=f\left(Y_{t,L}\right)\gamma_m^\prime+g\left(X_{t+m}\right)\beta_m^\prime+\varepsilon_{t+m},\quad\varepsilon_{t+m}\sim IID(0,\sigma_m),\quad m\in{1,2,\ldots},
+$$
+where <span class="arithmatex">\(Y_{t,L}\)</span> and <span class="arithmatex">\(X_t\)</span> are random variables observed at time <span class="arithmatex">\(t\)</span> and <span class="arithmatex">\(t+m\)</span>, respectively. Functions <span class="arithmatex">\(f\)</span> and <span class="arithmatex">\(g\)</span> are vector-valued deterministic functions.</p>
+<p>The purpose of the subindex <span class="arithmatex">\(m\)</span> is to provide a separate model for distant observations (<span class="arithmatex">\(m&gt;1\)</span>). This could also be achieved by an autoregressive process with <span class="arithmatex">\(p&gt;m\)</span> lags and first <span class="arithmatex">\(m\)</span> autoregressive coefficients restricted to zero. But this would complicate estimation and implementation of the model. In our set up parameters are unrestricted.</p>
+<p>We can state immediately, that parameters of this model can be estimated using lightning fast OLS versus slow non-linear optimization techniques like MLE or Kalman filter used for <span class="arithmatex">\(SARIMAX\)</span>. Here the vector <span class="arithmatex">\(X_t\)</span> has <span class="arithmatex">\(k\)</span> elements. Vector <span class="arithmatex">\(Y_{t,L}\)</span> is the arbitrary collection of lags of the dependent variable <span class="arithmatex">\(Y_t\)</span>. The lags can be specified by a <span class="arithmatex">\(l\)</span>-vector <span class="arithmatex">\(L=\left[s_1,\ldots,s_p\right]\)</span> for <span class="arithmatex">\(s_i\in\left\{0,1,2,\ldots\right\}\)</span>. Given this vector of lags we can define
+$$
+Y_{t,L}=\left[Y_{t-s_1},\ldots,Y_{t-s_p}\right].
+$$</p>
+<p>In particular, for <span class="arithmatex">\(h=1\)</span>, <span class="arithmatex">\(f(x)=x\)</span>, <span class="arithmatex">\(g(x)=0\)</span>,
+- if <span class="arithmatex">\(L=\left[0,1,\ldots,p-1\right]\)</span>, then we reduce the model to <span class="arithmatex">\(ARX(p)\)</span>.
+- if <span class="arithmatex">\(L=\left[0,p-1,p\right]\)</span>, then we reduce the model to <span class="arithmatex">\(SARIMAX(1,0,0)\times(1,0,0)[p]\)</span>.</p>
+<p>Note that the dependent variable can be <span class="arithmatex">\(h\)</span> periods away from the last observable explanatory data. This allows to have several independent models for each specific horizon <span class="arithmatex">\(h\)</span>.</p>
+<p>The idea behind deterministic transformations <span class="arithmatex">\(f\)</span> and <span class="arithmatex">\(g\)</span> is to allow, for example, for exponential moving average of <span class="arithmatex">\(Y_t\)</span> as an explanatory variable.</p>
+<p>Here and below we assume that we have the data <span class="arithmatex">\(\left\{Y_t,X_t\right\}_{t=1}^T\)</span>, where the first component is a scalar variable we aim to forecast, and the second is a vector of exogenous variables potentially relevant in forecasting <span class="arithmatex">\(Y_t\)</span>.</p>
+<h2 id="model-estimation">Model Estimation</h2>
+<p>Model parameters, <span class="arithmatex">\(\beta_m\)</span> are <span class="arithmatex">\(\gamma_m\)</span> estimated using standard OLS. Variance parameter <span class="arithmatex">\(\sigma_m\)</span> can be estimated using sample standard deviation of model residuals. The corresponding estimates are denoted by <span class="arithmatex">\(\hat{\beta}_m\)</span>, <span class="arithmatex">\(\hat{\gamma}_m\)</span>, and <span class="arithmatex">\(\hat{\sigma}_m\)</span>.</p>
+<h2 id="forecasting">Forecasting</h2>
+<p>In general, the forecast is computed from the following recursion:</p>
+<div class="arithmatex">\[
+Y^f_{T+h}=f\left(Y^f_{T-m+h,L}\right)\hat{\gamma}_m^\prime+g\left(X^f_{T+h}\right)\hat{\beta}_m^\prime,\quad m,h\geq1.
+\]</div>
+<p>Note that <span class="arithmatex">\(Y^f_{T-m+h,L}=\left[Y^f_{T-m+h-s_1},\ldots,Y^f_{T-m+h-s_p}\right]\)</span> which means <span class="arithmatex">\(Y^f_{T-m+h-s_i}=Y_{T-m+h-s_i}\)</span> is observed if <span class="arithmatex">\(h\leq m+s_i\)</span>, otherwise it has to be computed using the forecasting recursion. Exogenous forecast <span class="arithmatex">\(X^f_{T+h}\)</span> has to be obtained from a separate model.</p>
+<h2 id="prediction-intervals">Prediction Intervals</h2>
+<p>The goal is, given <span class="arithmatex">\(\alpha\in[0,1]\)</span>, to provide an interval <span class="arithmatex">\(C(h,m,\alpha)=\left[c_d,c_u\right]\)</span> such that <span class="arithmatex">\(P\left[Y_{T+h}^f\in C(h,m,\alpha)\right]=\alpha\)</span>. We propose to use parametric bootstrap.</p>
+<ol>
+<li>
+<p>Simulate <span class="arithmatex">\(\left\{\varepsilon_{T+i}^{(s)}\right\}_{s=1,i=1}^{S,h}\)</span> from <span class="arithmatex">\(N(0,\hat{\sigma}_m)\)</span>, where <span class="arithmatex">\(S\)</span> is the number of simulations. For each <span class="arithmatex">\(s\in S\)</span> simulate the vector of parameters <span class="arithmatex">\(\left\{\left[\beta^{(s)}_m,\gamma^{(s)}_m\right]\right\}_{s=1}^S\)</span> from estimated asymptotic distribution <span class="arithmatex">\(N\left(\left[\hat{\beta}_m,\hat{\gamma}_m\right],\hat{V}\left[\hat{\beta}_m,\hat{\gamma}_m\right]\right)\)</span>.</p>
+</li>
+<li>
+<p>Given parameter and innovations simulations, produce <span class="arithmatex">\(S\)</span> samples of <span class="arithmatex">\(h\)</span> horizon realizations <span class="arithmatex">\(\left\{Y_{T+h}^{f(s)}\right\}_{s=1}^S\)</span> iteratively:</p>
+<div class="arithmatex">\[
+Y_{T+h}^{(s)}=f\left(Y_{T-m+h,L}^{(s)}\right)\hat{\gamma}_m^{(s)\prime}+g\left(X^{(s)}_{T+h}\right)\hat{\beta}_m^{(s)\prime}+\varepsilon^{(s)}_{T+h}.
+\]</div>
+</li>
+<li>
+<p>Compute empirical quantiles <span class="arithmatex">\(\hat{c}_d\)</span> and <span class="arithmatex">\(\hat{c}_u\)</span> of <span class="arithmatex">\(\left\{Y_{T+h}^{f(s)}\right\}_{s=1}^S\)</span>.</p>
+</li>
+</ol>
+<h2 id="model-mixing">Model Mixing</h2>
+<p>Suppose we have two models. One model is designed to produce the best forecasts for short term horizon, and the second for the long term horizon. The problem is that the forecast line may not be "connected" at the point where short term "end" and the long term "begins". The proposed solution is to mix forecasts using a smooth transition function. In general, the mixed forecast is
+$$
+Y_{t+h}^f=\alpha_hY_{t+h}^{f1}+(1-\alpha_h)Y_{t+h}^{f2},
+$$
+where <span class="arithmatex">\(f1\)</span> marks short term forecast and <span class="arithmatex">\(f2\)</span> marks long term forecast. <span class="arithmatex">\(\alpha_h\)</span> is a time dependent weighting function. It is natural to require that <span class="arithmatex">\(\alpha_1=1\)</span>, and <span class="arithmatex">\(\alpha_H=0\)</span>, where 1 and <span class="arithmatex">\(H\)</span> are extreme short and long term, respectively. In between, we may use, for example, a logistic function:</p>
+<div class="arithmatex">\[
+\alpha_h=1 - \frac{1}{1+\exp\left\{-a(h-H/2)\right\}},
+\]</div>
+<p>where <span class="arithmatex">\(a\)</span> is a nuisance parameter that stretches the logistic function appropriately. Ideally, this parameter should be chosen to minimize cross-validation MAPE.</p>
+<h2 id="model-components">Model Components</h2>
+<p>In this section we will describe model components defined by a specific choice of functions <span class="arithmatex">\(f\)</span> and <span class="arithmatex">\(g\)</span>, as well as vectors <span class="arithmatex">\(Y_{t,L}\)</span> and <span class="arithmatex">\(X_t\)</span>.</p>
+<h3 id="linear-trend">Linear Trend</h3>
+<p>One of the features of a non-stationary time series is a trend. Here we outline only one possible choice for the trend function: linear trend.</p>
+<p>The easiest way to introduce a linear trend in our framework is to add two columns to the <span class="arithmatex">\(T\times k\)</span> matrix <span class="arithmatex">\(X=\left[X_1^\prime,\ldots,X_T^\prime\right]^\prime\)</span>: constant one and time. In particular, let <span class="arithmatex">\(X_{1,t}=1\)</span> and <span class="arithmatex">\(X_{2,t}=t\)</span>. The function <span class="arithmatex">\(g\)</span> is simply <span class="arithmatex">\(g(x)=x\)</span>.</p>
+<h3 id="seasonality">Seasonality</h3>
+<p>A seasonal regressor is a deterministic vector valued function of time, such that <span class="arithmatex">\(g(t)=g(t+p)\)</span> for all <span class="arithmatex">\(t\)</span>, and <span class="arithmatex">\(p&gt;1\)</span> is a given period length. For example, it can be that <span class="arithmatex">\(p=52\)</span> for weekly data or <span class="arithmatex">\(p=12\)</span> for monthly data.</p>
+<p>Below we introduce several options to model seasonal effects.</p>
+<h4 id="seasonality-with-dummies">Seasonality with Dummies</h4>
+<p>The vector of exogenous regressors is
+$$
+X_t=\left[\mathbf{1}(t\in A_1),\ldots,\mathbf{1}(t\in A_p)\right],
+\quad A_i={i,i+p,i+2p,\ldots},
+$$
+and <span class="arithmatex">\(g(x)=x\)</span>.</p>
+<p>If a constant is one of the additional model components, then one of the indicators in <span class="arithmatex">\(X_t\)</span> should be dropped to avoid multicollinearity in OLS estimation.</p>
+<h4 id="seasonality-with-splines">Seasonality with Splines</h4>
+<p>The vector of exogenous regressors is
+$$
+X_t=\left[s_1(t/p),\ldots,s_d(t/p)\right],
+$$
+such that the restricted weighted sum of these components is periodic. The dimension <span class="arithmatex">\(d\)</span> (selected by a statistician) controls the degree of freedom. The so-called basis <span class="arithmatex">\(s_j\)</span> is a deterministic function and consists of cubic splines. Also, <span class="arithmatex">\(g(x)=x\)</span>.</p>
+<p>The idea is that the spline is sufficiently flexible so that one needs only a few dimensions to adequately fit any random periodic process. For an alternative dummy representation of seasonal effect this approach is preferred due to a small number of parameters to estimate.</p>
+<h3 id="weighted-average-smoothing-components">Weighted Average (Smoothing) Components</h3>
+<p>In many examples the assumption of a constant or constantly changing mean (linear trend) is too restrictive. Here we propose to use a non-periodic smoother as a component of vector-valued function <span class="arithmatex">\(f\)</span>. The idea is to add an explanatory regressor that changes with the dependent variable, but much slower, and represents its "local" level over the not-so-distant past.</p>
+<p>The scalar deterministic smoother function <span class="arithmatex">\(f\)</span> depends on <span class="arithmatex">\(n\)</span> past observations of the dependent variable and a nuisance parameter <span class="arithmatex">\(\alpha\)</span> (possibly a vector):
+$$
+f\left(Y_{t-1},\ldots,Y_{t-n},\alpha\right).
+$$
+A trivial choice of such a function <span class="arithmatex">\(f\)</span> is a weighted moving average:
+$$
+f = \frac{\sum_{i=0}^{n-1}w(i,\alpha)Y_{t-i}}{\sum_{i=0}^{n-1}w(i,\alpha)}
+=\sum_{i=0}^{n-1}\tilde{w}(i,\alpha)Y_{t-i},
+\quad w(i,\alpha)\geq0.
+$$</p>
+<h3 id="structural-changes">Structural Changes</h3>
+<p>Suppose we have determined that the time series is structurally unstable. Suppose also that we were able to find a set of structural breakpoints <span class="arithmatex">\(B=\left\{t_1,\ldots,t_b\right\}\)</span>, where <span class="arithmatex">\(t_i\in(1,T)\)</span> for each <span class="arithmatex">\(i\)</span>. If we believe that the trend was one part of structural instability, then we may fit a piece-wise trend instead of a trend common for the whole observable sample. In particular, we consider <span class="arithmatex">\(b+1\)</span> intervals between the breakpoints and fit a trend model for each interval separately:
+$$
+Y_t=D_{t,i}+\varepsilon_t,\quad\varepsilon_t\sim IID(0,\sigma),\quad t\in\left[t_{i-1},t_i\right],\quad i=1,\ldots,b,\quad t_0=1.
+$$
+Out-of-sample forecast is then a simple extension of the last available trend line:
+$$
+Y^f_{T+h}=D^f_{T+h,b}.
+$$</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../data_preprocessing/" class="btn btn-neutral float-right" title="Data Preprocessing">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href=".." class="btn btn-neutral" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../data_preprocessing/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="https://polyfill.io/v3/polyfill.min.js?features=es6" defer></script>
+      <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
