@@ -30,7 +30,7 @@ Run tests:
 pip install -e .[test]
 pytest
 ```
-Build documentation (see more details [here](https://www.mkdocs.org/#getting-started)):
+Build documentation:
 ```shell
 pip install -e .[doc]
 mkdocs build
@@ -40,5 +40,3 @@ or use
 mkdocs serve
 ```
 if you prefer a live, self-refreshing, documentation.
-
-**Note:** Do not push directly to master! Please, submit a MR for review, make sure that Gitlab CI/CD pipelines pass.
