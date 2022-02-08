@@ -9,9 +9,7 @@ class CalendarReader:
     lbl = LabelsCommon()
     lbl_holidays_out = LabelsHolidaysOut()
 
-    def get_holidays(
-        self, holiday_name: str, country_code: str, from_year: int, to_year: int
-    ) -> pd.DataFrame:
+    def get_holidays(self, holiday_name: str, country_code: str, from_year: int, to_year: int) -> pd.DataFrame:
         """Import holidays.
 
         The reader uses 'workalendar' library available here: https://pypi.org/project/workalendar/.
@@ -44,18 +42,9 @@ class CalendarReader:
         cal = self._get_calendar(country_code)
 
         # Go over all holidays in each year find those that match the request
-        holiday_list = [
-            x[0]
-            for year in range(from_year, to_year)
-            for x in cal.holidays(year)
-            if holiday_name == x[1]
-        ]
+        holiday_list = [x[0] for year in range(from_year, to_year) for x in cal.holidays(year) if holiday_name == x[1]]
         if not holiday_list:
-            raise RuntimeError(
-                'Holiday "{}" was not found in "{}" calendar!'.format(
-                    holiday_name, country_code
-                )
-            )
+            raise RuntimeError('Holiday "{}" was not found in "{}" calendar!'.format(holiday_name, country_code))
 
         # Create a DataFrame with date as index, country and holiday name as columns
         return pd.DataFrame(

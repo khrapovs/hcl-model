@@ -1,6 +1,6 @@
 from workalendar.core import Calendar
 
-from hcl_model.calendar_reader import CalendarReader
+from hcl_model.utils.calendar_reader import CalendarReader
 
 
 class TestCalendarReader:
@@ -16,9 +16,7 @@ class TestCalendarReader:
     def test_get_holidays(self):
         cal_reader = CalendarReader()
 
-        df = cal_reader.get_holidays(
-            self.lbl_new_year, self.lbl_country_code_de, self.from_year, self.to_year
-        )
+        df = cal_reader.get_holidays(self.lbl_new_year, self.lbl_country_code_de, self.from_year, self.to_year)
 
         assert df.shape[0] == self.to_year - self.from_year
         assert set(df.values.ravel()) == {self.lbl_new_year, self.lbl_country_code_de}

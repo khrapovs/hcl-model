@@ -3,7 +3,7 @@ from typing import List, Union
 import pandas as pd
 from statsmodels.tsa.tsatools import add_trend
 
-from hcl_model.calendar_transformer import CalendarTransformer
+from hcl_model.transformers.calendar import CalendarTransformer
 from hcl_model.utils.get_duplicate_columns import get_duplicate_columns
 
 
