@@ -1,4 +1,8 @@
-# hcl-model
+# HCL Model
+
+![example workflow](https://github.com/khrapovs/hcl-model/actions/workflows/pytest.yaml/badge.svg)
+
+Simple time series forecasting based on multiple linear regression.
 
 ## Installation
 
