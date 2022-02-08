@@ -1,3 +1,3 @@
-# finance-forecasting
+# HCL Model
 
-## [Full Documentation](https://nexus.signintra.com/repository/GDSA-static/packages/hcl-model/docs/index.html)
+Source code on GitHub: [hcl-model](https://github.com/khrapovs/hcl-model)
