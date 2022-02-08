@@ -2,7 +2,7 @@
 
 ![PyTest](https://github.com/khrapovs/hcl-model/actions/workflows/pytest.yaml/badge.svg)
 ![Docs](https://github.com/khrapovs/hcl-model/actions/workflows/docs.yaml/badge.svg)
-[![!pypi](https://img.shields.io/pypi/v/hcl-model?color=orange)](https://pypi.org/project/hcl-model/)
+[![!pypi](https://img.shields.io/pypi/v/hcl-model)](https://pypi.org/project/hcl-model/)
 
 Simple time series forecasting based on multiple linear regression.
 
