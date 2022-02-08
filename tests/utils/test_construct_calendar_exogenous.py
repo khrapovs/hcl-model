@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from hcl_model.calendar_transformer import CalendarTransformer
+from hcl_model.transformers.calendar import CalendarTransformer
 from hcl_model.utils.construct_calendar_exogenous import construct_calendar_exogenous
 
 

@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 from statsmodels.tsa.tsatools import add_trend
 
-from hcl_model.calendar_transformer import CalendarTransformer
 from hcl_model.model_hcl_generic import HandCraftedLinearModel
+from hcl_model.transformers.calendar import CalendarTransformer
 from tests.test_model_common import TestModelCommon
 
 
