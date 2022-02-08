@@ -1,16 +1,8 @@
 # hcl-model
 
-## [Full documentation](https://nexus.signintra.com/repository/GDSA-static/packages/hcl-model/docs/index.html)
-
-This package implements Hand Crafted Linear (HCL) model for time series forecasting. It is used in [Ocean TME project](https://git.signintra.com/trade-management-platform).
-
-This package is hosted on [TSC GitLab](https://git.signintra.com/gdsa/python-libs/hcl-model).
-
 ## Installation
 
-Simply run while being inside of Schenker network:
 ```shell
-export PIP_EXTRA_INDEX_URL="https://${NEXUS_LOGIN}:${NEXUS_PASSWORD}@nexus.signintra.com/repository/pypi-all/simple"
 pip install hcl-model
 ```
 
