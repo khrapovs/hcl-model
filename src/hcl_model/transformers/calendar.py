@@ -4,8 +4,8 @@ import pandas as pd
 from patsy import dmatrix
 from scipy.stats import median_abs_deviation
 
-from hcl_model.calendar_reader import CalendarReader
 from hcl_model.labels import LabelsCommon, LabelsExog
+from hcl_model.utils.calendar_reader import CalendarReader
 
 
 class CalendarTransformer:
@@ -64,18 +64,13 @@ class CalendarTransformer:
         # rename columns for convenience
         cols = calendar_matrix.columns
         calendar_matrix = calendar_matrix.rename(
-            columns={
-                col: f"{self.lbl_exog.lbl_spline_dim}_{num + 1}"
-                for num, col in enumerate(cols)
-            }
+            columns={col: f"{self.lbl_exog.lbl_spline_dim}_{num + 1}" for num, col in enumerate(cols)}
         )
         data[calendar_matrix.columns] = calendar_matrix
 
         return data.drop(self.lbl_exog.lbl_calendar_numeric, axis=1)
 
-    def _get_numeric_periodicity(
-        self, dates: pd.DatetimeIndex, input_level: str = "isoweek"
-    ) -> pd.Series:
+    def _get_numeric_periodicity(self, dates: pd.DatetimeIndex, input_level: str = "isoweek") -> pd.Series:
         """
         Add a column of numeric scores between 0 and 1 that represent annual periodicity.
         Input levels 'isoweek' and 'month' supported currently. For any other input we fall
@@ -148,8 +143,7 @@ class CalendarTransformer:
             lh_df.append(
                 pd.DataFrame(
                     {
-                        self.lbl.date: dates[self.lbl.date]
-                        - pd.Timedelta("{} D".format(7 * i)),
+                        self.lbl.date: dates[self.lbl.date] - pd.Timedelta("{} D".format(7 * i)),
                         lbl_lh: [factor] * len(dates),
                     }
                 )
@@ -168,8 +162,7 @@ class CalendarTransformer:
             rh_df.append(
                 pd.DataFrame(
                     {
-                        self.lbl.date: dates[self.lbl.date]
-                        + pd.Timedelta("{} D".format(7 * i)),
+                        self.lbl.date: dates[self.lbl.date] + pd.Timedelta("{} D".format(7 * i)),
                         lbl_rh: [factor] * len(dates),
                     }
                 )
@@ -177,11 +170,7 @@ class CalendarTransformer:
         rh_df = pd.concat(rh_df).sort_values([self.lbl.date], ascending=True)
 
         # - generate new DataFrame with all holidays factors
-        edf = (
-            pd.merge(left=lh_df, right=rh_df, how="outer", on=self.lbl.date)
-            .fillna(0)
-            .reset_index(drop=True)
-        )
+        edf = pd.merge(left=lh_df, right=rh_df, how="outer", on=self.lbl.date).fillna(0).reset_index(drop=True)
 
         # - if the user required the lh and rh factors to be merged in one, merge them by summing the two columns
         # NOTE: the lh and rh factors in the case of merged factor are built to make the sum of the two columns
@@ -267,16 +256,12 @@ class CalendarTransformer:
 
         return self._add_dummy_lags_and_merge(df, dummy, lags, by)
 
-    def _get_holiday_dummy(
-        self, holiday_name: str, country_code: str, add_td: str = None
-    ) -> pd.DataFrame:
+    def _get_holiday_dummy(self, holiday_name: str, country_code: str, add_td: str = None) -> pd.DataFrame:
         """
         Any holiday included in the input dataframe can be translated to dummy column.
         Use e.g. `holiday_name` = 'Chinese New Year' and `country_code` = 'CN'.
         """
-        dates = self._read_holiday_dates(holiday_name, country_code).assign(
-            **{self.lbl_exog.lbl_is_holiday: 1}
-        )
+        dates = self._read_holiday_dates(holiday_name, country_code).assign(**{self.lbl_exog.lbl_is_holiday: 1})
         if add_td is not None:
             dates[self.lbl.date] = dates[self.lbl.date] + pd.Timedelta(add_td)
 
@@ -291,9 +276,7 @@ class CalendarTransformer:
             tolerance=pd.Timedelta(self.lbl_weekly_freq),
         ).fillna(0)
 
-    def _add_dummy_lags_and_merge(
-        self, df: pd.DataFrame, dummy, lags: Iterable[int], by: str
-    ) -> pd.DataFrame:
+    def _add_dummy_lags_and_merge(self, df: pd.DataFrame, dummy, lags: Iterable[int], by: str) -> pd.DataFrame:
         """
         Add optional forward and backward looking lags and merge to dataframe.
         """
@@ -303,9 +286,7 @@ class CalendarTransformer:
             dummy[lag_name] = dummy[dummy_name].shift(lag)
 
         # Add 0 to lags to preserve original dummy and rename:
-        dummy = dummy.drop(dummy_name, axis=1).rename(
-            columns={"{}_lag_0".format(dummy_name): dummy_name}
-        )
+        dummy = dummy.drop(dummy_name, axis=1).rename(columns={"{}_lag_0".format(dummy_name): dummy_name})
 
         return pd.merge_asof(
             df,
@@ -316,9 +297,7 @@ class CalendarTransformer:
             tolerance=pd.Timedelta(self.lbl_weekly_freq),
         )
 
-    def _get_weekly_date_range(
-        self, start: str = "2005-01-03", periods: int = 53 * 25
-    ) -> pd.DatetimeIndex:
+    def _get_weekly_date_range(self, start: str = "2005-01-03", periods: int = 53 * 25) -> pd.DatetimeIndex:
         return pd.date_range(start=start, periods=periods, freq=self.lbl_weekly_freq)
 
     def _read_holiday_dates(
@@ -329,9 +308,7 @@ class CalendarTransformer:
         to_year: int = 2030,
     ) -> pd.DataFrame:
         return (
-            self._cal_reader.get_holidays(
-                holiday_name, country_code, from_year, to_year
-            )
+            self._cal_reader.get_holidays(holiday_name, country_code, from_year, to_year)
             .reset_index()
             .filter(items=[self.lbl.date])
         )
@@ -357,9 +334,7 @@ class CalendarTransformer:
         """
         freq = pd.infer_freq(df.index)
         if freq[0] != "W":
-            raise RuntimeError(
-                "Only weekly data is supported. Frequency detected: {}".format(freq)
-            )
+            raise RuntimeError("Only weekly data is supported. Frequency detected: {}".format(freq))
 
         lbl_diff = "diff"
         lbl_week_number = "week_number"
@@ -367,12 +342,9 @@ class CalendarTransformer:
         data[lbl_week_number] = data.index.map(lambda x: x.isocalendar()[1])
         data[lbl_diff] = data[var_name] - data[var_name].ewm(com=10).mean()
         data[lbl_diff] = (data[lbl_diff] / data[lbl_diff].std()).abs()
-        mean_abs_diff = (
-            data.iloc[10:].groupby(lbl_week_number)[lbl_diff].mean().dropna()
-        )
+        mean_abs_diff = data.iloc[10:].groupby(lbl_week_number)[lbl_diff].mean().dropna()
         normalized = (
-            (mean_abs_diff - mean_abs_diff.median()).abs()
-            / median_abs_deviation(mean_abs_diff, scale=1 / 1.4826 ** 2)
+            (mean_abs_diff - mean_abs_diff.median()).abs() / median_abs_deviation(mean_abs_diff, scale=1 / 1.4826 ** 2)
         ).sort_values(ascending=False)
         weeks = normalized.loc[normalized > threshold].index[:lim_num_dummies]
         for week in weeks:
