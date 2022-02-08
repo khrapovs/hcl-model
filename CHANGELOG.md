@@ -10,6 +10,9 @@
 - A replacement for `sklearn.pipeline.FeatureUnion`: `DatetimeIndexedFeatureUnion` in `hcl_model.transformers.feature_union`.
 - A replacement for `sklearn.pipeline.make_union`: `make_union_of_datetime_indexed_features` in `hcl_model.transformers.feature_union`.
 - Move utility functions from `utils.py` to a separate module `utils` with `.py` file per function.
+#### Changed
+- Move `CalendarTransformer` to `hcl_model.transformers.calendar`.
+- Move `CalendarReader` to `hcl_model.utils.calendar_reader.CalendarReader`.
 
 ## 0.4.0 (2022-01-26)
 - Rename arguments: `exog` into `X`, and `endog` into `y`. This is done to comply with [`sklearn`](https://scikit-learn.org/stable/developers/develop.html) general interface.
