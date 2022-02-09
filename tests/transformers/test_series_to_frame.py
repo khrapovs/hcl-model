@@ -6,7 +6,7 @@ from hcl_model.transformers.series_to_frame import SeriesToFrameTransformer
 
 
 def test_series_to_frame() -> None:
-    df = SeriesToFrameTransformer().transform(X=pd.Series())
+    df = SeriesToFrameTransformer().transform(X=pd.Series(dtype=float))
     assert_frame_equal(df, pd.DataFrame(columns=[0], dtype=np.float64))
     df = SeriesToFrameTransformer().transform(X=pd.Series(np.arange(5), name="value"))
     assert_frame_equal(df, pd.DataFrame({"value": np.arange(5)}))
