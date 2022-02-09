@@ -3,6 +3,7 @@
 ![PyTest](https://github.com/khrapovs/hcl-model/actions/workflows/pytest.yaml/badge.svg)
 ![Docs](https://github.com/khrapovs/hcl-model/actions/workflows/docs.yaml/badge.svg)
 [![!pypi](https://img.shields.io/pypi/v/hcl-model)](https://pypi.org/project/hcl-model/)
+[![codecov](https://codecov.io/gh/khrapovs/hcl-model/branch/main/graph/badge.svg?token=KC0XT6R18H)](https://codecov.io/gh/khrapovs/hcl-model)
 
 Simple time series forecasting based on multiple linear regression.
 
