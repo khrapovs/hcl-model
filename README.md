@@ -8,7 +8,9 @@
 
 Simple time series forecasting based on multiple linear regression.
 
-[Full documentation](https://khrapovs.github.io/hcl-model/)
+## Documentation
+
+Full documentations hosted on GitHub pages: [khrapovs.github.io/hcl-model](https://khrapovs.github.io/hcl-model/).
 
 ## Installation
 
