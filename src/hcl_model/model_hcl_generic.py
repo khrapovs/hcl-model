@@ -115,7 +115,7 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
 
         # stack observed endogenous series and empty container for future simulations
         # Series of length (nobs + num_steps)
-        endog_updated = self._y_train.append(pd.Series(np.empty(num_steps)), ignore_index=True)
+        endog_updated = pd.concat([self._y_train, pd.Series(np.empty(num_steps))], axis=0, ignore_index=True)
         # DataFrame (nobs + num_steps) x num_simulations
         endog_updated = pd.concat([endog_updated] * num_simulations, axis=1)
 
