@@ -115,7 +115,7 @@ class TimeSeriesModelArchetype(ABC):
                 self.lbl_resid_std: self._get_residual_std(),
                 self.lbl_resid_skewness: self._get_residual_skewness(),
                 self.lbl_resid_kurtosis: self._get_residual_kurtosis(),
-                self.lbl_params: self._get_parameters().to_dict(),
+                self.lbl_params: self.get_parameters().to_dict(),
             }
         )
 
@@ -199,7 +199,11 @@ class TimeSeriesModelArchetype(ABC):
     def _nobs(self) -> int:
         return self._y_train.shape[0]
 
-    def _get_parameters(self) -> pd.Series:
+    def get_parameters(self) -> pd.Series:
+        """Get model parameters.
+
+        :return: A series of model parameters.
+        """
         return self._fit_results.params
 
     @staticmethod

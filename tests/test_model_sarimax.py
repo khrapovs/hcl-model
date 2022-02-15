@@ -12,7 +12,7 @@ class TestSARIMAX(TestModelCommon):
         model = SARIMAXModel(trend="n")
         y_train = endog[self.lbl_value]
         model.fit(y=y_train)
-        parameters = model._get_parameters()
+        parameters = model.get_parameters()
 
         assert list(parameters.index) == ["sigma2"]
         assert model._trend_fit is None
@@ -20,7 +20,7 @@ class TestSARIMAX(TestModelCommon):
 
         model = SARIMAXModel(trend="c")
         model.fit(y=y_train)
-        parameters = model._get_parameters()
+        parameters = model.get_parameters()
 
         assert list(parameters.index) == ["sigma2"]
         assert set(model._trend_fit.params.index.values) == {"const"}
@@ -29,7 +29,7 @@ class TestSARIMAX(TestModelCommon):
 
         model = SARIMAXModel(trend="ct")
         model.fit(y=y_train)
-        parameters = model._get_parameters()
+        parameters = model.get_parameters()
 
         assert list(parameters.index) == ["sigma2"]
         assert set(model._trend_fit.params.index.values) == {"const", "trend"}
@@ -37,7 +37,7 @@ class TestSARIMAX(TestModelCommon):
 
         model = SARIMAXModel(trend="t")
         model.fit(y=y_train)
-        parameters = model._get_parameters()
+        parameters = model.get_parameters()
 
         assert list(parameters.index) == ["sigma2"]
         assert set(model._trend_fit.params.index.values) == {"trend"}
@@ -45,7 +45,7 @@ class TestSARIMAX(TestModelCommon):
 
         model = SARIMAXModel(trend="n")
         model.fit(y=y_train, X=exog)
-        parameters = model._get_parameters()
+        parameters = model.get_parameters()
 
         assert list(parameters.index) == ["const", "time", "sigma2"]
         assert model._trend_fit is None
