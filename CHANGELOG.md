@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.1 (2022-02-15)
+### Changed
+- Convert previously private method to public: `hcl_model.model_base.ModelBase.get_parameters`.
+
 ## 0.5.0 (2022-02-08)
 ### Added
 - `sklearn` compliant transformer `TargetOutlierCorrectionTransformer` in `hcl_model.transformers.outlier_correction`. Read documentation in `docs/data_preprocessing.md`.

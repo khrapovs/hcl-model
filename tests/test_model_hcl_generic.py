@@ -17,7 +17,7 @@ class TestHCL(TestModelCommon):
 
         model = HandCraftedLinearModel()
         model.fit(y=y_train, X=x_train)
-        parameters = model._get_parameters()
+        parameters = model.get_parameters()
 
         params_expected = ["{} const".format(model.lbl_original_exog), "{} time".format(model.lbl_original_exog)]
         assert list(parameters.index) == params_expected
@@ -198,7 +198,7 @@ class TestHCLTransforms:
         model = HandCraftedLinearModel(endog_transform=f, exog_transform=g)
         model.fit(y=y_train, X=x_train)
 
-        parameters = model._get_parameters()
+        parameters = model.get_parameters()
 
         keys = set(f.keys())
         for key in g.keys():
@@ -328,7 +328,7 @@ class TestHCLWeightedTransforms:
         model = HandCraftedLinearModel(endog_transform=f, exog_transform=g)
         model.fit(y=y_train, X=x_train, weights=weights)
 
-        parameters = model._get_parameters()
+        parameters = model.get_parameters()
 
         keys = set(f.keys())
         for key in g.keys():

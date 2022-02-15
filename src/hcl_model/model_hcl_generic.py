@@ -6,10 +6,10 @@ import numpy as np
 import pandas as pd
 from statsmodels.regression.linear_model import WLS
 
-from hcl_model.time_series_model_archetype import TimeSeriesModelArchetype
+from hcl_model.model_base import ModelBase
 
 
-class HandCraftedLinearModel(TimeSeriesModelArchetype):
+class HandCraftedLinearModel(ModelBase):
     r"""Hand Crafted Linear Model
 
     :param endog_transform: transformation functions of the endogenous variable
@@ -89,12 +89,12 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
                 endog=endog_updated[: self._nobs + j + 1], exog=x_train_and_test.iloc[: self._nobs + j + 1]
             )
             rhs_vars = self._convert_transformed_dict_to_frame(transformed=transformed).iloc[-1, :]
-            endog_updated.iloc[self._nobs + j] = np.dot(rhs_vars, self._get_parameters())
+            endog_updated.iloc[self._nobs + j] = np.dot(rhs_vars, self.get_parameters())
 
         return endog_updated.iloc[self._nobs :].to_frame().rename_axis(index=self._y_train.index.name)
 
     def _simulate(self, num_steps: int, num_simulations: int, X: pd.DataFrame = None, **kwargs) -> pd.DataFrame:
-        num_params = self._get_parameters().shape[0]
+        num_params = self.get_parameters().shape[0]
         simulation = np.empty((num_steps, num_simulations))
 
         # simulate num_simulations parameters from its multivariate normal distribution
@@ -105,7 +105,7 @@ class HandCraftedLinearModel(TimeSeriesModelArchetype):
                 np.random.normal(loc=0, scale=1, size=(num_simulations, num_params)),
                 np.linalg.cholesky(self._fit_results.cov_params()).T,
             )
-            + self._get_parameters().values
+            + self.get_parameters().values
         )
         beta_simulated = pd.DataFrame(beta_simulated, columns=self._fit_results.params.index)
         # simulate innovations for the right hand side of the model
