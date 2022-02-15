@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 
 
-class TimeSeriesModelArchetype(ABC):
-    """Time Series Model Archetype."""
+class ModelBase(ABC):
+    """Time Series Model base class."""
 
     lbl_r2 = "rsquared"
     lbl_aic = "aic"

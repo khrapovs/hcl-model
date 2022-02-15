@@ -7,10 +7,10 @@ from statsmodels.regression.linear_model import OLS
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from statsmodels.tsa.tsatools import add_trend
 
-from hcl_model.time_series_model_archetype import TimeSeriesModelArchetype
+from hcl_model.model_base import ModelBase
 
 
-class SARIMAXModel(TimeSeriesModelArchetype):
+class SARIMAXModel(ModelBase):
     """
     SARIMAX model
 

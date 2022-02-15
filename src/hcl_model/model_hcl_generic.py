@@ -6,10 +6,10 @@ import numpy as np
 import pandas as pd
 from statsmodels.regression.linear_model import WLS
 
-from hcl_model.time_series_model_archetype import TimeSeriesModelArchetype
+from hcl_model.model_base import ModelBase
 
 
-class HandCraftedLinearModel(TimeSeriesModelArchetype):
+class HandCraftedLinearModel(ModelBase):
     r"""Hand Crafted Linear Model
 
     :param endog_transform: transformation functions of the endogenous variable

@@ -2,7 +2,7 @@
 
 ## 0.5.1 (2022-02-15)
 ### Changed
-- Convert previously private method to public: `hcl_model.time_series_model_archetype.TimeSeriesModelArchetype.get_parameters`.
+- Convert previously private method to public: `hcl_model.model_base.ModelBase.get_parameters`.
 
 ## 0.5.0 (2022-02-08)
 ### Added
