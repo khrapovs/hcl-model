@@ -58,7 +58,7 @@ class TestPredictionsSanity:
         expected_forecast = pd.DataFrame({self.lbl_value: y_train.mean()}, index=index[-num_steps:])
 
         model = SARIMAXModel(trend="c")
-        model.fit(y=y_train)
+        model.fit(y=y_train, X=None)
         forecast_sarimax = model.predict(num_steps=num_steps)
 
         model = HandCraftedLinearModel()
@@ -81,7 +81,7 @@ class TestPredictionsSanity:
         expected_forecast = pd.DataFrame({self.lbl_value: data.iloc[-num_steps:].values}, index=index[-num_steps:])
 
         model = SARIMAXModel(trend="ct")
-        model.fit(y=y_train)
+        model.fit(y=y_train, X=None)
         forecast_sarimax = model.predict(num_steps=num_steps)
 
         model = HandCraftedLinearModel()

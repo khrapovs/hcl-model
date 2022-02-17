@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 import pandas as pd
@@ -22,12 +22,12 @@ class ModelBase(ABC):
         self._y_train = None
         self._x_train = None
 
-    def fit(self, y: pd.Series, X: pd.DataFrame = None, **kwargs):
+    def fit(self, X: Optional[pd.DataFrame], y: pd.Series, **kwargs):
         """
         Fit the model using some provided training data.
 
+        :param X: optional exogenous explanatory variables
         :param y: endogenous variable
-        :param X: exogenous explanatory variables
         """
         self._y_train = y.copy()
         self._x_train = X.copy() if X is not None else None

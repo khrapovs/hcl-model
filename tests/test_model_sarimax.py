@@ -11,7 +11,7 @@ class TestSARIMAX(TestModelCommon):
 
         model = SARIMAXModel(trend="n")
         y_train = endog[self.lbl_value]
-        model.fit(y=y_train)
+        model.fit(y=y_train, X=None)
         parameters = model.get_parameters()
 
         assert list(parameters.index) == ["sigma2"]
@@ -19,7 +19,7 @@ class TestSARIMAX(TestModelCommon):
         assert set(model.summary()[model.lbl_params].keys()) == {"sigma2"}
 
         model = SARIMAXModel(trend="c")
-        model.fit(y=y_train)
+        model.fit(y=y_train, X=None)
         parameters = model.get_parameters()
 
         assert list(parameters.index) == ["sigma2"]
@@ -28,7 +28,7 @@ class TestSARIMAX(TestModelCommon):
         assert set(model.summary()[model.lbl_params].keys()) == {"sigma2"}
 
         model = SARIMAXModel(trend="ct")
-        model.fit(y=y_train)
+        model.fit(y=y_train, X=None)
         parameters = model.get_parameters()
 
         assert list(parameters.index) == ["sigma2"]
@@ -36,7 +36,7 @@ class TestSARIMAX(TestModelCommon):
         assert set(model.summary()[model.lbl_params].keys()) == {"sigma2"}
 
         model = SARIMAXModel(trend="t")
-        model.fit(y=y_train)
+        model.fit(y=y_train, X=None)
         parameters = model.get_parameters()
 
         assert list(parameters.index) == ["sigma2"]
@@ -109,7 +109,7 @@ class TestSARIMAX(TestModelCommon):
         endog, exog = self.generate_data()
 
         model = SARIMAXModel(trend="n")
-        model.fit(y=endog[self.lbl_value])
+        model.fit(y=endog[self.lbl_value], X=None)
 
         assert set(model.summary().index) >= {
             model.lbl_aic,
