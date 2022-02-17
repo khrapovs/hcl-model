@@ -1,21 +1,28 @@
 from __future__ import annotations
 
+from typing import Union
+
 import numpy as np
 import pandas as pd
 import ruptures as rpt
 from sklearn.base import BaseEstimator, TransformerMixin
+
+X_TYPE = Union[pd.Series, np.ndarray]
 
 
 class TargetStructuralBreakCorrectionTransformer(BaseEstimator, TransformerMixin):
     def __init__(self, structural_break_correction: bool = True) -> None:
         self.structural_break_correction = structural_break_correction
 
-    def fit(self, X: pd.Series, y: pd.Series = None) -> TargetStructuralBreakCorrectionTransformer:
+    def fit(self, X: X_TYPE, y: pd.Series = None) -> TargetStructuralBreakCorrectionTransformer:
         return self
 
-    def transform(self, X: pd.Series) -> pd.Series:
+    def transform(self, X: X_TYPE) -> X_TYPE:
         if self.structural_break_correction:
-            return self._get_series_without_structural_breaks(signal=X)
+            if isinstance(X, np.ndarray):
+                return self._get_series_without_structural_breaks(signal=pd.Series(X.flatten())).values
+            else:
+                return self._get_series_without_structural_breaks(signal=X)
         else:
             return X
 

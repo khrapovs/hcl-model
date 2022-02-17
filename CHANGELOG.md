@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.4 (2022-02-17)
+### Changed
+- Allow `np.ndarray` type for `TargetOutlierCorrectionTransformer`, and `TargetStructuralBreakCorrectionTransformer`. 
+
 ## 0.5.3 (2022-02-17)
 ### Changed
 - Change parameter order in `hcl_model.model_base.ModelBase.fit` and `.predict`. This is important if the estimator is used in `sklearn.pipeline.Pipeline` object.

@@ -6,7 +6,7 @@ from pandas._testing import assert_series_equal
 from hcl_model.transformers.outlier_correction import TargetOutlierCorrectionTransformer, CorrectOutliersMethodNames
 
 
-class TestOutliers:
+class TestTargetOutlierCorrectionTransformer:
     def test_outliers(self) -> None:
         periods = 10
         index = pd.date_range(start="2021-01-01", periods=periods)
@@ -60,8 +60,11 @@ class TestOutliers:
         pd.testing.assert_series_equal(too_low_actual, too_low_expected)
         pd.testing.assert_series_equal(too_high_actual, too_high_expected)
 
+    @pytest.mark.parametrize("y_type", ["series", "ndarray"])
     @pytest.mark.parametrize("six_sigma_multiplier", [3, 4, 5])
-    def test_get_series_with_corrected_outliers_with_no_correction(self, six_sigma_multiplier: int) -> None:
+    def test_get_series_with_corrected_outliers_with_no_correction(
+        self, y_type: str, six_sigma_multiplier: int
+    ) -> None:
         date_col = "date"
         value_col = "value"
         size = 300
@@ -76,15 +79,19 @@ class TestOutliers:
         outliers_detector = TargetOutlierCorrectionTransformer(
             outlier_correction_method=CorrectOutliersMethodNames.nothing, six_sigma_multiplier=six_sigma_multiplier
         )
-        y_corrected = outliers_detector.transform(X=y)
-        assert_series_equal(y, y_corrected)
+        y_corrected = outliers_detector.transform(X=y.values if y_type == "ndarray" else y)
+        if y_type == "ndarray":
+            np.array_equal(y.values, y_corrected)
+        else:
+            assert_series_equal(y, y_corrected)
 
+    @pytest.mark.parametrize("y_type", ["series", "ndarray"])
     @pytest.mark.parametrize("six_sigma_multiplier", [3, 4, 5])
     @pytest.mark.parametrize(
         "outlier_correction_method", [CorrectOutliersMethodNames.trim, CorrectOutliersMethodNames.interpolate]
     )
     def test_get_series_with_corrected_outliers(
-        self, six_sigma_multiplier: int, outlier_correction_method: CorrectOutliersMethodNames
+        self, y_type: str, six_sigma_multiplier: int, outlier_correction_method: CorrectOutliersMethodNames
     ) -> None:
         date_col = "date"
         value_col = "value"
@@ -100,20 +107,22 @@ class TestOutliers:
         outliers_detector = TargetOutlierCorrectionTransformer(
             outlier_correction_method=outlier_correction_method, six_sigma_multiplier=six_sigma_multiplier
         )
-        y_corrected = outliers_detector.transform(X=y)
+        y_corrected = outliers_detector.transform(X=y.values if y_type == "ndarray" else y)
         expected_nr_outliers_found = 3
         nr_outliers_found = sum(y != y_corrected)
 
-        assert y.name == y_corrected.name
+        if y_type == "series":
+            assert y.name == y_corrected.name
         assert sum(abs(y_corrected)) <= sum(abs(y))
         assert nr_outliers_found == expected_nr_outliers_found
 
+    @pytest.mark.parametrize("y_type", ["series", "ndarray"])
     @pytest.mark.parametrize("six_sigma_multiplier", [3, 4, 5])
     @pytest.mark.parametrize(
         "outlier_correction_method", [CorrectOutliersMethodNames.trim, CorrectOutliersMethodNames.interpolate]
     )
     def test_get_series_with_corrected_outliers_constant_value_no_outliers(
-        self, six_sigma_multiplier: int, outlier_correction_method: CorrectOutliersMethodNames
+        self, y_type: str, six_sigma_multiplier: int, outlier_correction_method: CorrectOutliersMethodNames
     ) -> None:
         date_col = "date"
         value_col = "value"
@@ -126,16 +135,20 @@ class TestOutliers:
         outliers_detector = TargetOutlierCorrectionTransformer(
             outlier_correction_method=outlier_correction_method, six_sigma_multiplier=six_sigma_multiplier
         )
-        y_corrected = outliers_detector.transform(X=y)
+        y_corrected = outliers_detector.transform(X=y.values if y_type == "ndarray" else y)
 
-        assert_series_equal(y, y_corrected)
+        if y_type == "ndarray":
+            np.array_equal(y.values, y_corrected)
+        else:
+            assert_series_equal(y, y_corrected)
 
+    @pytest.mark.parametrize("y_type", ["series", "ndarray"])
     @pytest.mark.parametrize("six_sigma_multiplier", [3, 4, 5])
     @pytest.mark.parametrize(
         "outlier_correction_method", [CorrectOutliersMethodNames.trim, CorrectOutliersMethodNames.interpolate]
     )
     def test_get_series_with_corrected_outliers_no_outliers(
-        self, six_sigma_multiplier: int, outlier_correction_method: CorrectOutliersMethodNames
+        self, y_type: str, six_sigma_multiplier: int, outlier_correction_method: CorrectOutliersMethodNames
     ) -> None:
         date_col = "date"
         value_col = "value"
@@ -148,9 +161,12 @@ class TestOutliers:
         outliers_detector = TargetOutlierCorrectionTransformer(
             outlier_correction_method=outlier_correction_method, six_sigma_multiplier=six_sigma_multiplier
         )
-        y_corrected = outliers_detector.transform(X=y)
+        y_corrected = outliers_detector.transform(X=y.values if y_type == "ndarray" else y)
 
-        assert_series_equal(y, y_corrected)
+        if y_type == "ndarray":
+            np.array_equal(y.values, y_corrected)
+        else:
+            assert_series_equal(y, y_corrected)
 
     def test_get_series_with_outliers_and_with_wrong_method(self) -> None:
         date_col = "date"
