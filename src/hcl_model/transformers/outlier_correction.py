@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Union
+
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -32,11 +34,14 @@ class TargetOutlierCorrectionTransformer(BaseEstimator, TransformerMixin):
     def fit(self, X: pd.Series, y: pd.Series = None) -> TargetOutlierCorrectionTransformer:
         return self
 
-    def transform(self, X: pd.Series) -> pd.Series:
+    def transform(self, X: Union[pd.Series, np.ndarray]) -> Union[pd.Series, np.ndarray]:
         if self.outlier_correction_method == CorrectOutliersMethodNames.nothing:
             return X
         else:
-            return self._correct_outliers(series=X)
+            if isinstance(X, np.ndarray):
+                return self._correct_outliers(series=pd.Series(X.flatten())).values
+            else:
+                return self._correct_outliers(series=X)
 
     def _correct_outliers(self, series: pd.Series) -> pd.Series:
         is_too_high = self.get_idx_too_high(series=series)
