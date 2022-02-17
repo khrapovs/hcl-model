@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.2 (2022-02-17)
+### Changed
+- Store all transformer parameters as class attributes with the same name during initialization. 
+
 ## 0.5.1 (2022-02-15)
 ### Changed
 - Convert previously private method to public: `hcl_model.model_base.ModelBase.get_parameters`.

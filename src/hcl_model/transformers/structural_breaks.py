@@ -8,13 +8,13 @@ from sklearn.base import BaseEstimator, TransformerMixin
 
 class TargetStructuralBreakCorrectionTransformer(BaseEstimator, TransformerMixin):
     def __init__(self, structural_break_correction: bool = True) -> None:
-        self._structural_break_correction = structural_break_correction
+        self.structural_break_correction = structural_break_correction
 
     def fit(self, X: pd.Series, y: pd.Series = None) -> TargetStructuralBreakCorrectionTransformer:
         return self
 
     def transform(self, X: pd.Series) -> pd.Series:
-        if self._structural_break_correction:
+        if self.structural_break_correction:
             return self._get_series_without_structural_breaks(signal=X)
         else:
             return X

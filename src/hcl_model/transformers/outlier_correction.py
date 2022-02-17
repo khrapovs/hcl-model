@@ -24,16 +24,16 @@ class TargetOutlierCorrectionTransformer(BaseEstimator, TransformerMixin):
         smoothing_window: int = 52,
         ewm_alpha: float = 0.1,
     ) -> None:
-        self._six_sigma_multiplier = six_sigma_multiplier
-        self._smoothing_window = smoothing_window
-        self._ewm_alpha = ewm_alpha
-        self._outlier_correction_method = outlier_correction_method
+        self.six_sigma_multiplier = six_sigma_multiplier
+        self.smoothing_window = smoothing_window
+        self.ewm_alpha = ewm_alpha
+        self.outlier_correction_method = outlier_correction_method
 
     def fit(self, X: pd.Series, y: pd.Series = None) -> TargetOutlierCorrectionTransformer:
         return self
 
     def transform(self, X: pd.Series) -> pd.Series:
-        if self._outlier_correction_method == CorrectOutliersMethodNames.nothing:
+        if self.outlier_correction_method == CorrectOutliersMethodNames.nothing:
             return X
         else:
             return self._correct_outliers(series=X)
@@ -43,10 +43,10 @@ class TargetOutlierCorrectionTransformer(BaseEstimator, TransformerMixin):
         is_too_low = self.get_idx_too_low(series=series)
         series_corrected = series.copy()
         if sum(is_too_high) + sum(is_too_low) > 0:
-            if self._outlier_correction_method == CorrectOutliersMethodNames.trim:
+            if self.outlier_correction_method == CorrectOutliersMethodNames.trim:
                 series_corrected[is_too_low] = self.get_lower_limit(series=series)[is_too_low]
                 series_corrected[is_too_high] = self.get_upper_limit(series=series)[is_too_high]
-            elif self._outlier_correction_method == CorrectOutliersMethodNames.interpolate:
+            elif self.outlier_correction_method == CorrectOutliersMethodNames.interpolate:
                 series_corrected[is_too_low] = np.nan
                 series_corrected[is_too_high] = np.nan
                 series_corrected = series_corrected.interpolate()
@@ -61,12 +61,12 @@ class TargetOutlierCorrectionTransformer(BaseEstimator, TransformerMixin):
         return series < self.get_lower_limit(series=series)
 
     def get_upper_limit(self, series: pd.Series) -> pd.Series:
-        return self._get_smoothed_series(series=series) + self._six_sigma_multiplier * self._get_iqr_residuals(
+        return self._get_smoothed_series(series=series) + self.six_sigma_multiplier * self._get_iqr_residuals(
             series=series
         )
 
     def get_lower_limit(self, series: pd.Series) -> pd.Series:
-        return self._get_smoothed_series(series=series) - self._six_sigma_multiplier * self._get_iqr_residuals(
+        return self._get_smoothed_series(series=series) - self.six_sigma_multiplier * self._get_iqr_residuals(
             series=series
         )
 
@@ -75,4 +75,4 @@ class TargetOutlierCorrectionTransformer(BaseEstimator, TransformerMixin):
         return residuals.quantile(q=0.75) - residuals.quantile(q=0.25)
 
     def _get_smoothed_series(self, series: pd.Series) -> pd.Series:
-        return smooth_series(y=series, window=self._smoothing_window, quantile=0.5, ewm_alpha=self._ewm_alpha)
+        return smooth_series(y=series, window=self.smoothing_window, quantile=0.5, ewm_alpha=self.ewm_alpha)
