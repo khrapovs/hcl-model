@@ -26,7 +26,7 @@ class TargetStructuralBreakCorrectionTransformer(BaseEstimator, TransformerMixin
         else:
             return X
 
-    def _get_series_without_structural_breaks(self, signal: X_TYPE) -> pd.Series:
+    def _get_series_without_structural_breaks(self, signal: pd.Series) -> pd.Series:
         change_points = self._get_change_points(y=signal)
         if len(change_points) <= 1:
             return signal
@@ -44,7 +44,7 @@ class TargetStructuralBreakCorrectionTransformer(BaseEstimator, TransformerMixin
             return signal
 
     @staticmethod
-    def _adjust_variability(y: X_TYPE, variability_current: float, variability_past: float) -> pd.Series:
+    def _adjust_variability(y: pd.Series, variability_current: float, variability_past: float) -> pd.Series:
         if variability_past == 0:
             return y
         else:
@@ -52,10 +52,9 @@ class TargetStructuralBreakCorrectionTransformer(BaseEstimator, TransformerMixin
             return (y - y.mean()) * adjust_factor + y.mean()
 
     @staticmethod
-    def _adjust_level(y: X_TYPE, level_current: float) -> pd.Series:
+    def _adjust_level(y: pd.Series, level_current: float) -> pd.Series:
         return y + level_current - y.median()
 
     @staticmethod
-    def _get_change_points(y: X_TYPE) -> np.array:
-        values = y.values if isinstance(y, pd.Series) else y
-        return np.array(rpt.KernelCPD(kernel="rbf", jump=1, min_size=26).fit(values).predict(pen=10))
+    def _get_change_points(y: pd.Series) -> np.array:
+        return np.array(rpt.KernelCPD(kernel="rbf", jump=1, min_size=26).fit(y.values).predict(pen=10))
