@@ -6,7 +6,7 @@ from pandas._testing import assert_series_equal
 from hcl_model.transformers.outlier_correction import TargetOutlierCorrectionTransformer, CorrectOutliersMethodNames
 
 
-class TestOutliers:
+class TestTargetOutlierCorrectionTransformer:
     def test_outliers(self) -> None:
         periods = 10
         index = pd.date_range(start="2021-01-01", periods=periods)
