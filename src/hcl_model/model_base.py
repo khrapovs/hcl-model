@@ -4,6 +4,8 @@ from typing import List, Optional, Union
 import numpy as np
 import pandas as pd
 
+from hcl_model.utils.check_x_y import check_X_y
+
 
 class ModelBase(ABC):
     """Time Series Model base class."""
@@ -29,8 +31,7 @@ class ModelBase(ABC):
         :param X: optional exogenous explanatory variables
         :param y: endogenous variable
         """
-        self._y_train = y.copy()
-        self._x_train = X.copy() if X is not None else None
+        self._x_train, self._y_train = check_X_y(X=X, y=y)
         self._fit(**kwargs)
         return self
 
