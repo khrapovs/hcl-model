@@ -2,7 +2,7 @@
 
 ## 0.5.3 (2022-02-17)
 ### Changed
-- change parameter order in `hcl_model.model_base.ModelBase.fit`. This is important if the estimator is used in `sklearn.pipeline.Pipeline` object.
+- change parameter order in `hcl_model.model_base.ModelBase.fit` and `.predict`. This is important if the estimator is used in `sklearn.pipeline.Pipeline` object.
 
 ## 0.5.2 (2022-02-17)
 ### Changed

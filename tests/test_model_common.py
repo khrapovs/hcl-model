@@ -59,7 +59,7 @@ class TestPredictionsSanity:
 
         model = SARIMAXModel(trend="c")
         model.fit(y=y_train, X=None)
-        forecast_sarimax = model.predict(num_steps=num_steps)
+        forecast_sarimax = model.predict(num_steps=num_steps, X=None)
 
         model = HandCraftedLinearModel()
         model.fit(y=y_train, X=x_train)
@@ -82,7 +82,7 @@ class TestPredictionsSanity:
 
         model = SARIMAXModel(trend="ct")
         model.fit(y=y_train, X=None)
-        forecast_sarimax = model.predict(num_steps=num_steps)
+        forecast_sarimax = model.predict(num_steps=num_steps, X=None)
 
         model = HandCraftedLinearModel()
         model.fit(y=y_train, X=x_train)
