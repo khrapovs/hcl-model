@@ -9,6 +9,8 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from hcl_model.utils.smooth import smooth_series
 from hcl_model.utils.string_enum import StringEnum
 
+X_TYPE = Union[pd.Series, np.ndarray]
+
 
 class CorrectOutliersMethodNames(StringEnum):
     nothing = "nothing"
@@ -31,10 +33,10 @@ class TargetOutlierCorrectionTransformer(BaseEstimator, TransformerMixin):
         self.ewm_alpha = ewm_alpha
         self.outlier_correction_method = outlier_correction_method
 
-    def fit(self, X: pd.Series, y: pd.Series = None) -> TargetOutlierCorrectionTransformer:
+    def fit(self, X: X_TYPE, y: pd.Series = None) -> TargetOutlierCorrectionTransformer:
         return self
 
-    def transform(self, X: Union[pd.Series, np.ndarray]) -> Union[pd.Series, np.ndarray]:
+    def transform(self, X: X_TYPE) -> X_TYPE:
         if self.outlier_correction_method == CorrectOutliersMethodNames.nothing:
             return X
         else:
