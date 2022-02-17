@@ -29,7 +29,9 @@ class ModelBase(ABC):
         Fit the model using some provided training data.
 
         :param X: optional exogenous explanatory variables
-        :param y: endogenous variable
+        :param y: pd.Series or np.ndarray, endogenous variable
+            In case of np.ndarray its index is inherited from `X`.
+            In case of np.ndarray and if `X` is `None`, then `TypeError` is risen.
         """
         self._x_train, self._y_train = check_X_y(X=X, y=y)
         self._fit(**kwargs)
