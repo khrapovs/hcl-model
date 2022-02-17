@@ -15,14 +15,14 @@ class TruncateTransformer(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, full_weight_weeks: int, truncate: bool = True) -> None:
-        self._truncate = truncate
-        self._full_weight_weeks = full_weight_weeks
+        self.truncate = truncate
+        self.full_weight_weeks = full_weight_weeks
 
     def fit(self, X: X_TYPE, y: pd.Series = None) -> TruncateTransformer:
         return self
 
     def transform(self, X: X_TYPE) -> X_TYPE:
-        if self._truncate and self._full_weight_weeks > 0:
-            return X[X.index > X.index.max() - pd.DateOffset(weeks=self._full_weight_weeks, days=1)]
+        if self.truncate and self.full_weight_weeks > 0:
+            return X[X.index > X.index.max() - pd.DateOffset(weeks=self.full_weight_weeks, days=1)]
         else:
             return X
