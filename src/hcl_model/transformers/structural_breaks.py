@@ -7,23 +7,26 @@ import pandas as pd
 import ruptures as rpt
 from sklearn.base import BaseEstimator, TransformerMixin
 
-SIGNAL_TYPE = Union[pd.Series, np.ndarray]
+X_TYPE = Union[pd.Series, np.ndarray]
 
 
 class TargetStructuralBreakCorrectionTransformer(BaseEstimator, TransformerMixin):
     def __init__(self, structural_break_correction: bool = True) -> None:
         self.structural_break_correction = structural_break_correction
 
-    def fit(self, X: SIGNAL_TYPE, y: pd.Series = None) -> TargetStructuralBreakCorrectionTransformer:
+    def fit(self, X: X_TYPE, y: pd.Series = None) -> TargetStructuralBreakCorrectionTransformer:
         return self
 
-    def transform(self, X: SIGNAL_TYPE) -> pd.Series:
+    def transform(self, X: X_TYPE) -> X_TYPE:
         if self.structural_break_correction:
-            return self._get_series_without_structural_breaks(signal=X)
+            if isinstance(X, np.ndarray):
+                return self._get_series_without_structural_breaks(signal=pd.Series(X.flatten())).values
+            else:
+                return self._get_series_without_structural_breaks(signal=X)
         else:
             return X
 
-    def _get_series_without_structural_breaks(self, signal: SIGNAL_TYPE) -> pd.Series:
+    def _get_series_without_structural_breaks(self, signal: X_TYPE) -> pd.Series:
         change_points = self._get_change_points(y=signal)
         if len(change_points) <= 1:
             return signal
@@ -41,7 +44,7 @@ class TargetStructuralBreakCorrectionTransformer(BaseEstimator, TransformerMixin
             return signal
 
     @staticmethod
-    def _adjust_variability(y: SIGNAL_TYPE, variability_current: float, variability_past: float) -> pd.Series:
+    def _adjust_variability(y: X_TYPE, variability_current: float, variability_past: float) -> pd.Series:
         if variability_past == 0:
             return y
         else:
@@ -49,10 +52,10 @@ class TargetStructuralBreakCorrectionTransformer(BaseEstimator, TransformerMixin
             return (y - y.mean()) * adjust_factor + y.mean()
 
     @staticmethod
-    def _adjust_level(y: SIGNAL_TYPE, level_current: float) -> pd.Series:
+    def _adjust_level(y: X_TYPE, level_current: float) -> pd.Series:
         return y + level_current - y.median()
 
     @staticmethod
-    def _get_change_points(y: SIGNAL_TYPE) -> np.array:
+    def _get_change_points(y: X_TYPE) -> np.array:
         values = y.values if isinstance(y, pd.Series) else y
         return np.array(rpt.KernelCPD(kernel="rbf", jump=1, min_size=26).fit(values).predict(pen=10))
