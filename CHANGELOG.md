@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.3 (2022-02-17)
+### Changed
+- Change parameter order in `hcl_model.model_base.ModelBase.fit` and `.predict`. This is important if the estimator is used in `sklearn.pipeline.Pipeline` object.
+- Allow `np.ndarray` for `y` input of the `fit` method. In this case its index is inherited from `X`. If `X` is `None`, then `TypeError` is risen. 
+
 ## 0.5.2 (2022-02-17)
 ### Changed
 - Store all transformer parameters as class attributes with the same name during initialization. 

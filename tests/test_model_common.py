@@ -3,6 +3,7 @@ from typing import Tuple
 
 import pandas as pd
 import numpy as np
+import pytest
 from statsmodels.tsa.tsatools import add_trend
 
 from hcl_model.model_hcl_generic import HandCraftedLinearModel
@@ -41,10 +42,11 @@ class TestModelCommon:
         pass
 
 
+@pytest.mark.parametrize("y_type", ["series", "ndarray"])
 class TestPredictionsSanity:
     lbl_value = "value"
 
-    def test_constant(self):
+    def test_constant(self, y_type: str):
         nobs = 30
         num_steps = 10
 
@@ -58,17 +60,17 @@ class TestPredictionsSanity:
         expected_forecast = pd.DataFrame({self.lbl_value: y_train.mean()}, index=index[-num_steps:])
 
         model = SARIMAXModel(trend="c")
-        model.fit(y=y_train)
-        forecast_sarimax = model.predict(num_steps=num_steps)
+        model.fit(y=y_train, X=None)
+        forecast_sarimax = model.predict(num_steps=num_steps, X=None)
 
         model = HandCraftedLinearModel()
-        model.fit(y=y_train, X=x_train)
+        model.fit(y=y_train.values if y_type == "ndarray" else y_train, X=x_train)
         forecast_hcl = model.predict(num_steps=num_steps, X=x_test)
 
         pd.testing.assert_frame_equal(forecast_sarimax, expected_forecast)
         pd.testing.assert_frame_equal(forecast_hcl, expected_forecast)
 
-    def test_linear_trend(self):
+    def test_linear_trend(self, y_type: str):
         nobs = 30
         num_steps = 10
         index = pd.date_range("2019-01-01", periods=nobs, freq="W-FRI", name="date")
@@ -81,17 +83,17 @@ class TestPredictionsSanity:
         expected_forecast = pd.DataFrame({self.lbl_value: data.iloc[-num_steps:].values}, index=index[-num_steps:])
 
         model = SARIMAXModel(trend="ct")
-        model.fit(y=y_train)
-        forecast_sarimax = model.predict(num_steps=num_steps)
+        model.fit(y=y_train, X=None)
+        forecast_sarimax = model.predict(num_steps=num_steps, X=None)
 
         model = HandCraftedLinearModel()
-        model.fit(y=y_train, X=x_train)
+        model.fit(y=y_train.values if y_type == "ndarray" else y_train, X=x_train)
         forecast_hcl = model.predict(num_steps=num_steps, X=x_test)
 
         pd.testing.assert_frame_equal(forecast_sarimax, expected_forecast)
         pd.testing.assert_frame_equal(forecast_hcl, expected_forecast)
 
-    def test_ar1_with_const(self):
+    def test_ar1_with_const(self, y_type: str):
         nobs = 30
         num_steps = 10
         index = pd.date_range("2019-01-01", periods=nobs, freq="W-FRI", name="date")
@@ -103,16 +105,16 @@ class TestPredictionsSanity:
         endog_transform = {"lag1": lambda y: y.shift(1)}
 
         model = SARIMAXModel(trend="n", order=(1, 0, 0), enforce_stationarity=False)
-        model.fit(y=y_train, X=x_train)
+        model.fit(y=y_train.values if y_type == "ndarray" else y_train, X=x_train)
         forecast_sarimax = model.predict(num_steps=num_steps, X=x_test)
 
         model = HandCraftedLinearModel(endog_transform=endog_transform)
-        model.fit(y=y_train, X=x_train)
+        model.fit(y=y_train.values if y_type == "ndarray" else y_train, X=x_train)
         forecast_hcl = model.predict(num_steps=num_steps, X=x_test)
 
         pd.testing.assert_frame_equal(forecast_sarimax, forecast_hcl, rtol=1e-1)
 
-    def test_ar1_with_linear_trend(self):
+    def test_ar1_with_linear_trend(self, y_type: str):
         nobs = 30
         num_steps = 10
         index = pd.date_range("2019-01-01", periods=nobs, freq="W-FRI", name="date")
@@ -124,11 +126,11 @@ class TestPredictionsSanity:
         endog_transform = {"lag1": lambda y: y.shift(1)}
 
         model = SARIMAXModel(trend="n", order=(1, 0, 0))
-        model.fit(y=y_train, X=x_train)
+        model.fit(y=y_train.values if y_type == "ndarray" else y_train, X=x_train)
         forecast_sarimax = model.predict(num_steps=num_steps, X=x_test)
 
         model = HandCraftedLinearModel(endog_transform=endog_transform)
-        model.fit(y=y_train, X=x_train)
+        model.fit(y=y_train.values if y_type == "ndarray" else y_train, X=x_train)
         forecast_hcl = model.predict(num_steps=num_steps, X=x_test)
 
         pd.testing.assert_frame_equal(forecast_sarimax, forecast_hcl, rtol=1e-1)

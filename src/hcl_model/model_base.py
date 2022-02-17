@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Optional, Union
 
 import numpy as np
 import pandas as pd
+
+from hcl_model.utils.check_x_y import check_X_y
 
 
 class ModelBase(ABC):
@@ -22,15 +24,16 @@ class ModelBase(ABC):
         self._y_train = None
         self._x_train = None
 
-    def fit(self, y: pd.Series, X: pd.DataFrame = None, **kwargs):
+    def fit(self, X: Optional[pd.DataFrame], y: Union[pd.Series, np.ndarray], **kwargs):
         """
         Fit the model using some provided training data.
 
-        :param y: endogenous variable
-        :param X: exogenous explanatory variables
+        :param X: optional exogenous explanatory variables
+        :param y: pd.Series or np.ndarray, endogenous variable
+            In case of np.ndarray its index is inherited from `X`.
+            In case of np.ndarray and if `X` is `None`, then `TypeError` is risen.
         """
-        self._y_train = y.copy()
-        self._x_train = X.copy() if X is not None else None
+        self._x_train, self._y_train = check_X_y(X=X, y=y)
         self._fit(**kwargs)
         return self
 
@@ -40,8 +43,8 @@ class ModelBase(ABC):
 
     def predict(
         self,
+        X: Optional[pd.DataFrame],
         num_steps: int,
-        X: pd.DataFrame = None,
         quantile_levels: List[float] = None,
         num_simulations: int = None,
         **kwargs
@@ -49,8 +52,8 @@ class ModelBase(ABC):
         """
         Forecast the values and prediction intervals
 
-        :param num_steps: number of point in the future that we want to forecast
         :param X: exogenous variables should cover the whole prediction horizon
+        :param num_steps: number of point in the future that we want to forecast
         :param quantile_levels: list of desired prediction interval levels between 0 and 100 (in percentages).
             If not provided, no confidence interval will be given as output
         :param num_simulations: number of simulations for simulation-based prediction intervals
