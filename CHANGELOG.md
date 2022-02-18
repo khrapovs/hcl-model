@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.5 (2022-02-18)
+### Changed
+- If `num_steps` is `None`, get it from number of `X` observations in `hcl_model.model_base.ModelBase.predict`.
+
 ## 0.5.4 (2022-02-17)
 ### Changed
 - Allow `np.ndarray` type for `TargetOutlierCorrectionTransformer`, and `TargetStructuralBreakCorrectionTransformer`. 

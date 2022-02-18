@@ -61,10 +61,14 @@ class TestPredictionsSanity:
 
         model = SARIMAXModel(trend="c")
         model.fit(y=y_train, X=None)
+        with pytest.raises(ValueError, match="Either `num_steps` or `X` should be provided"):
+            model.predict(num_steps=None, X=None)
         forecast_sarimax = model.predict(num_steps=self.split_num_steps, X=None)
 
         model = HandCraftedLinearModel()
         model.fit(y=y_train.values if y_type == "ndarray" else y_train, X=x_train)
+        with pytest.raises(ValueError, match="Either `num_steps` or `X` should be provided"):
+            model.predict(num_steps=None, X=None)
         forecast_hcl = model.predict(num_steps=num_steps, X=x_test)
 
         pd.testing.assert_frame_equal(forecast_sarimax, expected_forecast)
@@ -84,10 +88,14 @@ class TestPredictionsSanity:
 
         model = SARIMAXModel(trend="ct")
         model.fit(y=y_train, X=None)
+        with pytest.raises(ValueError, match="Either `num_steps` or `X` should be provided"):
+            model.predict(num_steps=None, X=None)
         forecast_sarimax = model.predict(num_steps=self.split_num_steps, X=None)
 
         model = HandCraftedLinearModel()
         model.fit(y=y_train.values if y_type == "ndarray" else y_train, X=x_train)
+        with pytest.raises(ValueError, match="Either `num_steps` or `X` should be provided"):
+            model.predict(num_steps=None, X=None)
         forecast_hcl = model.predict(num_steps=num_steps, X=x_test)
 
         pd.testing.assert_frame_equal(forecast_sarimax, expected_forecast)
@@ -105,10 +113,14 @@ class TestPredictionsSanity:
 
         model = SARIMAXModel(trend="n", order=(1, 0, 0), enforce_stationarity=False)
         model.fit(y=y_train.values if y_type == "ndarray" else y_train, X=x_train)
+        with pytest.raises(ValueError, match="Either `num_steps` or `X` should be provided"):
+            model.predict(num_steps=None, X=None)
         forecast_sarimax = model.predict(num_steps=num_steps, X=x_test)
 
         model = HandCraftedLinearModel(endog_transform=endog_transform)
         model.fit(y=y_train.values if y_type == "ndarray" else y_train, X=x_train)
+        with pytest.raises(ValueError, match="Either `num_steps` or `X` should be provided"):
+            model.predict(num_steps=None, X=None)
         forecast_hcl = model.predict(num_steps=num_steps, X=x_test)
 
         pd.testing.assert_frame_equal(forecast_sarimax, forecast_hcl, rtol=1e-1)
@@ -124,10 +136,14 @@ class TestPredictionsSanity:
 
         model = SARIMAXModel(trend="n", order=(1, 0, 0))
         model.fit(y=y_train.values if y_type == "ndarray" else y_train, X=x_train)
+        with pytest.raises(ValueError, match="Either `num_steps` or `X` should be provided"):
+            model.predict(num_steps=None, X=None)
         forecast_sarimax = model.predict(num_steps=num_steps, X=x_test)
 
         model = HandCraftedLinearModel(endog_transform=endog_transform)
         model.fit(y=y_train.values if y_type == "ndarray" else y_train, X=x_train)
+        with pytest.raises(ValueError, match="Either `num_steps` or `X` should be provided"):
+            model.predict(num_steps=None, X=None)
         forecast_hcl = model.predict(num_steps=num_steps, X=x_test)
 
         pd.testing.assert_frame_equal(forecast_sarimax, forecast_hcl, rtol=1e-1)

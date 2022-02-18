@@ -70,8 +70,11 @@ class ModelBase(ABC):
             2019-06-07   102      75     127
             2019-06-14   305     206     278
         """
-        if (num_steps is None) & (X is not None):
-            num_steps = X.shape[0]
+        if num_steps is None:
+            if X is not None:
+                num_steps = X.shape[0]
+            else:
+                raise ValueError("Either `num_steps` or `X` should be provided")
         self._check_exogenous(exog=X, nobs=self._nobs, num_steps=num_steps)
         predictions = self._predict(num_steps=num_steps, X=X, quantile_levels=quantile_levels, **kwargs)
         if quantile_levels is not None:
