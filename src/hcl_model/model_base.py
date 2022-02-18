@@ -44,7 +44,7 @@ class ModelBase(ABC):
     def predict(
         self,
         X: Optional[pd.DataFrame],
-        num_steps: int,
+        num_steps: int = None,
         quantile_levels: List[float] = None,
         num_simulations: int = None,
         **kwargs
@@ -52,8 +52,11 @@ class ModelBase(ABC):
         """
         Forecast the values and prediction intervals
 
-        :param X: exogenous variables should cover the whole prediction horizon
-        :param num_steps: number of point in the future that we want to forecast
+        :param X: optional pd.DataFrame
+            exogenous variables should cover the whole prediction horizon
+        :param num_steps: optional int
+            Number of point in the future that we want to forecast.
+            If None, and X is not None, it will be computed as the number of observations in X
         :param quantile_levels: list of desired prediction interval levels between 0 and 100 (in percentages).
             If not provided, no confidence interval will be given as output
         :param num_simulations: number of simulations for simulation-based prediction intervals
@@ -67,6 +70,8 @@ class ModelBase(ABC):
             2019-06-07   102      75     127
             2019-06-14   305     206     278
         """
+        if (num_steps is None) & (X is not None):
+            num_steps = X.shape[0]
         self._check_exogenous(exog=X, nobs=self._nobs, num_steps=num_steps)
         predictions = self._predict(num_steps=num_steps, X=X, quantile_levels=quantile_levels, **kwargs)
         if quantile_levels is not None:
