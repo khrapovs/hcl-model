@@ -4,6 +4,7 @@
 ![Docs](https://github.com/khrapovs/hcl-model/actions/workflows/docs.yaml/badge.svg)
 [![!pypi](https://img.shields.io/pypi/v/hcl-model)](https://pypi.org/project/hcl-model/)
 [![codecov](https://codecov.io/gh/khrapovs/hcl-model/branch/main/graph/badge.svg?token=KC0XT6R18H)](https://codecov.io/gh/khrapovs/hcl-model)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![!python-versions](https://img.shields.io/pypi/pyversions/hcl-model)](https://pypi.org/project/hcl-model/)
 
 Simple time series forecasting based on multiple linear regression.
