@@ -267,7 +267,7 @@ class TestHCLTransforms:
             lbl_splines: lambda df: CalendarTransformer().add_periodic_splines(
                 df=df, degrees_of_freedom=degrees_of_freedom
             ),
-            lbl_squared: lambda df: df ** 2,
+            lbl_squared: lambda df: df**2,
         }
         num_steps = 5
         x_train = data.iloc[:-num_steps, 1:]
