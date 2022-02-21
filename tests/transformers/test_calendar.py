@@ -23,31 +23,6 @@ class TestCalendarTransformer:
             index=pd.date_range(start="2015-01-01", freq="7 D", periods=53 * 3),
         )
 
-    def test_add_holiday_triangles(self):
-        xreg = self.get_xreg_example()
-        cal_transformer = CalendarTransformer()
-
-        lh_factors = [1.0, 2.0]
-        rh_factors = [7.0]
-
-        tasks = [
-            (self.lbl_cny, self.lbl_country_code_tw),
-            (self.lbl_new_year, self.lbl_country_code_de),
-            (self.lbl_easter_monday, self.lbl_country_code_de),
-            (self.lbl_cgw_tw, self.lbl_country_code_tw),
-        ]
-
-        for holiday, country in tasks:
-            df1 = cal_transformer.add_holiday_triangles(
-                xreg, holiday, country, lh_factors=lh_factors, rh_factors=rh_factors
-            )
-            df2 = cal_transformer.add_holiday_triangles(xreg, holiday, country, merge_factors=True)
-
-            assert df1.shape == (xreg.shape[0], xreg.shape[1] + 2)
-            assert df2.shape == (xreg.shape[0], xreg.shape[1] + 1)
-
-            assert set(df1.iloc[:, -2:].values.ravel()) <= set([0.0] + lh_factors + rh_factors)
-
     def test_add_holiday_dummies(self):
         xreg = self.get_xreg_example()
         cal_transformer = CalendarTransformer()

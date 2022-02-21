@@ -2,19 +2,18 @@ from __future__ import annotations
 
 import pandas as pd
 from patsy import dmatrix
+from sklearn.base import TransformerMixin, BaseEstimator
 
 from hcl_model.labels import LabelsCommon, LabelsExog
-from hcl_model.utils.calendar_reader import CalendarReader
 
 
-class AddPeriodicSplines:
+class AddPeriodicSplines(BaseEstimator, TransformerMixin):
     lbl = LabelsCommon()
     lbl_exog = LabelsExog()
 
     def __init__(self, input_level: str = "isoweek", degrees_of_freedom: int = 4) -> None:
         self.input_level = input_level
         self.degrees_of_freedom = degrees_of_freedom
-        self._cal_reader = CalendarReader()
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None) -> AddPeriodicSplines:
         return self

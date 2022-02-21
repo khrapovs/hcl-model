@@ -5,7 +5,7 @@ import pytest
 from hcl_model.transformers.add_periodic_splines import AddPeriodicSplines
 
 
-class TestCalendarTransformer:
+class TestAddPeriodicSplines:
     @staticmethod
     def get_xreg_example() -> pd.DataFrame:
         return pd.DataFrame(
