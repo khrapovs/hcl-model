@@ -3,7 +3,9 @@ from typing import List, Union
 import pandas as pd
 from statsmodels.tsa.tsatools import add_trend
 
-from hcl_model.transformers.calendar import CalendarTransformer
+from hcl_model.transformers.add_automatic_seasonal_dummies import AddAutomaticSeasonalDummies
+from hcl_model.transformers.add_holiday_dummies import AddHolidayDummies
+from hcl_model.transformers.add_periodic_splines import AddPeriodicSplines
 from hcl_model.utils.get_duplicate_columns import get_duplicate_columns
 
 
@@ -35,30 +37,22 @@ def construct_calendar_exogenous(
         endog.name = "endog"
 
     extended = endog.reindex(
-        pd.date_range(
-            start=endog.index[0],
-            periods=endog.shape[0] + num_steps,
-            freq=pd.infer_freq(endog.index),
-        )
+        pd.date_range(start=endog.index[0], periods=endog.shape[0] + num_steps, freq=pd.infer_freq(endog.index))
     )
 
     df = add_trend(extended, trend=trend)
-    cal_transformer = CalendarTransformer()
 
     if splines_df is not None:
-        df = cal_transformer.add_periodic_splines(df, degrees_of_freedom=int(splines_df))
+        df = AddPeriodicSplines(degrees_of_freedom=int(splines_df)).transform(X=df)
 
     if holidays is not None:
         for i, holiday in enumerate(holidays):
             if holiday is not None:
-                df = cal_transformer.add_holiday_dummies(df, **holiday, dummy_name="holiday_{}".format(i + 1))
+                df = AddHolidayDummies(**holiday, dummy_name="holiday_{}".format(i + 1)).transform(X=df)
 
     if auto_dummy_max_number is not None:
-        df = cal_transformer.add_automatic_seasonal_dummies(
-            df=df,
-            var_name=endog.name,
-            threshold=auto_dummy_threshold,
-            lim_num_dummies=auto_dummy_max_number,
-        )
+        df = AddAutomaticSeasonalDummies(
+            var_name=str(endog.name), threshold=auto_dummy_threshold, lim_num_dummies=auto_dummy_max_number
+        ).transform(X=df)
 
     return df.drop(columns=get_duplicate_columns(df)).iloc[:, 1:]

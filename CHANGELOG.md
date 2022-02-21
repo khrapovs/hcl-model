@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.0 (2022-02-21)
+### Changed
+- Break down `CalendarTransformer` into `sklearn` compatible transformers: `AddAutomaticSeasonalDummies`, `AddHolidayDummies`, `AddHolidayTriangles`, and `AddPeriodicSplines`.
+
 ## 0.5.6 (2022-02-21)
 ### Added
 - Trivial `inverse_transform` method that returns the input to `TruncateTransformer`, `TargetOutlierCorrectionTransformer`, and `TargetStructuralBreakCorrectionTransformer`. This addition allows using these transformers in `sklearn.compose.TransformedTargetRegressor` as `tranformer` argument for trivial inverse transform of pipeline predictions.
