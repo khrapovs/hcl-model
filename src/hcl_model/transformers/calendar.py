@@ -344,7 +344,7 @@ class CalendarTransformer:
         data[lbl_diff] = (data[lbl_diff] / data[lbl_diff].std()).abs()
         mean_abs_diff = data.iloc[10:].groupby(lbl_week_number)[lbl_diff].mean().dropna()
         normalized = (
-            (mean_abs_diff - mean_abs_diff.median()).abs() / median_abs_deviation(mean_abs_diff, scale=1 / 1.4826 ** 2)
+            (mean_abs_diff - mean_abs_diff.median()).abs() / median_abs_deviation(mean_abs_diff, scale=1 / 1.4826**2)
         ).sort_values(ascending=False)
         weeks = normalized.loc[normalized > threshold].index[:lim_num_dummies]
         for week in weeks:
