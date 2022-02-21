@@ -63,14 +63,13 @@ class HandCraftedLinearModel(ModelBase):
     lbl_original_exog = "original_exog"
 
     def __init__(self, endog_transform: Dict[str, Callable] = None, exog_transform: Dict[str, Callable] = None) -> None:
-        super().__init__()
-        self._endog_transform = self._init_transform(name=self.lbl_original_endog, transform=endog_transform)
-        self._exog_transform = self._init_transform(name=self.lbl_original_exog, transform=exog_transform)
+        self.endog_transform = self._init_transform(name=self.lbl_original_endog, transform=endog_transform)
+        self.exog_transform = self._init_transform(name=self.lbl_original_exog, transform=exog_transform)
 
     def _fit(self, weights: Union[Sequence, float] = 1.0) -> None:
-        transformed = self._transform_all_data(endog=self._y_train, exog=self._x_train)
+        transformed = self._transform_all_data(endog=self.y_train_, exog=self.x_train_)
         rhs_vars = self._convert_transformed_dict_to_frame(transformed=transformed)
-        self._fit_results = WLS(endog=self._y_train, exog=rhs_vars, weights=weights, missing="drop").fit()
+        self.fit_results_ = WLS(endog=self.y_train_, exog=rhs_vars, weights=weights, missing="drop").fit()
 
     def _predict(
         self,
@@ -81,9 +80,9 @@ class HandCraftedLinearModel(ModelBase):
         num_simulations: int = None,
     ) -> pd.DataFrame:
         endog_updated = pd.concat(
-            [self._y_train, pd.Series(np.empty(num_steps), name=self._get_endog_name(), index=X.index)]
+            [self.y_train_, pd.Series(np.empty(num_steps), name=self._get_endog_name(), index=X.index)]
         )
-        x_train_and_test = pd.concat([self._x_train, X])
+        x_train_and_test = pd.concat([self.x_train_, X])
         for j in range(num_steps):
             transformed = self._transform_all_data(
                 endog=endog_updated[: self._nobs + j + 1], exog=x_train_and_test.iloc[: self._nobs + j + 1]
@@ -91,7 +90,7 @@ class HandCraftedLinearModel(ModelBase):
             rhs_vars = self._convert_transformed_dict_to_frame(transformed=transformed).iloc[-1, :]
             endog_updated.iloc[self._nobs + j] = np.dot(rhs_vars, self.get_parameters())
 
-        return endog_updated.iloc[self._nobs :].to_frame().rename_axis(index=self._y_train.index.name)
+        return endog_updated.iloc[self._nobs :].to_frame().rename_axis(index=self.y_train_.index.name)
 
     def _simulate(self, num_steps: int, num_simulations: int, X: pd.DataFrame = None, **kwargs) -> pd.DataFrame:
         num_params = self.get_parameters().shape[0]
@@ -103,19 +102,19 @@ class HandCraftedLinearModel(ModelBase):
         beta_simulated = (
             np.dot(
                 np.random.normal(loc=0, scale=1, size=(num_simulations, num_params)),
-                np.linalg.cholesky(self._fit_results.cov_params()).T,
+                np.linalg.cholesky(self.fit_results_.cov_params()).T,
             )
             + self.get_parameters().values
         )
-        beta_simulated = pd.DataFrame(beta_simulated, columns=self._fit_results.params.index)
+        beta_simulated = pd.DataFrame(beta_simulated, columns=self.fit_results_.params.index)
         # simulate innovations for the right hand side of the model
         innovation = np.random.normal(
-            loc=0, scale=self._fit_results.mse_resid**0.5, size=(num_steps, num_simulations)
+            loc=0, scale=self.fit_results_.mse_resid**0.5, size=(num_steps, num_simulations)
         )
 
         # stack observed endogenous series and empty container for future simulations
         # Series of length (nobs + num_steps)
-        endog_updated = pd.concat([self._y_train, pd.Series(np.empty(num_steps))], axis=0, ignore_index=True)
+        endog_updated = pd.concat([self.y_train_, pd.Series(np.empty(num_steps))], axis=0, ignore_index=True)
         # DataFrame (nobs + num_steps) x num_simulations
         endog_updated = pd.concat([endog_updated] * num_simulations, axis=1)
 
@@ -127,7 +126,7 @@ class HandCraftedLinearModel(ModelBase):
             for key, val in transformed_endog.items():
                 temp += val.iloc[-1, :] * beta_simulated[key]
 
-            transformed_exog = self._transform_all_data(exog=pd.concat([self._x_train, X]).iloc[: self._nobs + j + 1])
+            transformed_exog = self._transform_all_data(exog=pd.concat([self.x_train_, X]).iloc[: self._nobs + j + 1])
             exog_df = self._convert_transformed_dict_to_frame(transformed=transformed_exog)
             for key in exog_df.columns:
                 temp += exog_df[key].iloc[-1] * beta_simulated[key]
@@ -147,16 +146,16 @@ class HandCraftedLinearModel(ModelBase):
         return quantiles
 
     def _get_rsquared(self) -> float:
-        return self._fit_results.rsquared
+        return self.fit_results_.rsquared
 
     def _get_aic(self) -> float:
-        return self._fit_results.aic
+        return self.fit_results_.aic
 
     def _get_fitted_values(self) -> pd.Series:
-        return self._fit_results.fittedvalues
+        return self.fit_results_.fittedvalues
 
     def _get_residuals(self) -> pd.Series:
-        return self._fit_results.resid
+        return self.fit_results_.resid
 
     @staticmethod
     def _transform_data(
@@ -180,8 +179,8 @@ class HandCraftedLinearModel(ModelBase):
         :return: dictionary {f(Y_{t,L}), g(X_t)} of transformed endogenous and exogenous.
         Original endogenous variable is dropped from the dictionary to avoid using it as a right-hand-side variable.
         """
-        transformed_endog = self._transform_data(data=endog, transform=self._endog_transform)
-        transformed_exog = self._transform_data(data=exog, transform=self._exog_transform)
+        transformed_endog = self._transform_data(data=endog, transform=self.endog_transform)
+        transformed_exog = self._transform_data(data=exog, transform=self.exog_transform)
         transformed = {**transformed_endog, **transformed_exog}
         transformed.pop(self.lbl_original_endog, None)
         return transformed
