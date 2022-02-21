@@ -1,1 +1,16 @@
+# PR status check
+coverage:
+  status:
+    project:
+      default:
+        informational: true
+    patch:
+      default:
+        informational: true
+
+# post coverage report as comment on PR
 comment: false
+
+# enable codecov to report to GitHub status checks
+github_checks:
+  annotations: false
