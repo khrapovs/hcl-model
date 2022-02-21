@@ -5,7 +5,7 @@ from typing import Iterable
 import pandas as pd
 from sklearn.base import TransformerMixin, BaseEstimator
 
-from hcl_model.labels import LabelsCommon, LabelsExog
+from hcl_model.labels import LabelsCommon
 from hcl_model.utils.calendar_reader import CalendarReader
 
 
