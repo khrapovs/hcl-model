@@ -10,6 +10,7 @@ jobs:
         with:
           options: "--check --verbose"
           src: "."
+          version: 22.1.0
 
   test:
     name: Pytest
