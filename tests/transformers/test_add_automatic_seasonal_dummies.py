@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from hcl_model.transformers.calendar import CalendarTransformer
+from hcl_model.transformers.add_automatic_seasonal_dummies import AddAutomaticSeasonalDummies
 
 
 class TestAddAutomaticSeasonalDummies:
@@ -11,7 +11,7 @@ class TestAddAutomaticSeasonalDummies:
         nobs = 200
         lbl_endog = "endog"
         lbl_date = "date"
-        lbl_dummy = CalendarTransformer.lbl_auto_dummy
+        lbl_dummy = AddAutomaticSeasonalDummies.lbl_auto_dummy
         df = pd.DataFrame(
             {lbl_endog: np.random.random(nobs) + 100},
             index=pd.DatetimeIndex(pd.date_range("2017-01-01", periods=nobs, freq="W-FRI"), name=lbl_date),
@@ -25,17 +25,14 @@ class TestAddAutomaticSeasonalDummies:
                 lbl_dummy.format(week),
             ] = 1
 
-        df_result = CalendarTransformer.add_automatic_seasonal_dummies(
-            df=df[[lbl_endog]],
-            var_name=lbl_endog,
-            threshold=3,
-            lim_num_dummies=len(weeks) * 2,
-        )
+        df_result = AddAutomaticSeasonalDummies(
+            var_name=lbl_endog, threshold=3, lim_num_dummies=len(weeks) * 2
+        ).transform(X=df[[lbl_endog]])
 
         pd.testing.assert_frame_equal(df.sort_index(axis=1), df_result.sort_index(axis=1))
 
-        df_result = CalendarTransformer.add_automatic_seasonal_dummies(
-            df=df[[lbl_endog]], var_name=lbl_endog, threshold=3, lim_num_dummies=2
+        df_result = AddAutomaticSeasonalDummies(var_name=lbl_endog, threshold=3, lim_num_dummies=2).transform(
+            X=df[[lbl_endog]]
         )
 
         correct_cols = [lbl_endog, lbl_dummy.format(10), lbl_dummy.format(2)]
@@ -45,24 +42,18 @@ class TestAddAutomaticSeasonalDummies:
             df_result.sort_index(axis=1),
         )
 
-        df_result = CalendarTransformer.add_automatic_seasonal_dummies(
-            df=df[[lbl_endog]], var_name=lbl_endog, threshold=3, lim_num_dummies=4
+        df_result = AddAutomaticSeasonalDummies(var_name=lbl_endog, threshold=3, lim_num_dummies=4).transform(
+            X=df[[lbl_endog]]
         )
-        correct_cols = [
-            lbl_endog,
-            lbl_dummy.format(10),
-            lbl_dummy.format(50),
-            lbl_dummy.format(2),
-            lbl_dummy.format(5),
-        ]
+        correct_cols = [lbl_endog, lbl_dummy.format(10), lbl_dummy.format(50), lbl_dummy.format(2), lbl_dummy.format(5)]
 
         pd.testing.assert_frame_equal(
             df.filter(items=correct_cols).sort_index(axis=1),
             df_result.sort_index(axis=1),
         )
 
-        df_result = CalendarTransformer.add_automatic_seasonal_dummies(
-            df=df[[lbl_endog]], var_name=lbl_endog, threshold=3, lim_num_dummies=6
+        df_result = AddAutomaticSeasonalDummies(var_name=lbl_endog, threshold=3, lim_num_dummies=6).transform(
+            X=df[[lbl_endog]]
         )
         correct_cols = [
             lbl_endog,
@@ -79,12 +70,9 @@ class TestAddAutomaticSeasonalDummies:
 
         num_dummies = 0
         for quantile in np.linspace(0.99, 0.01, num=10):
-            df_result = CalendarTransformer.add_automatic_seasonal_dummies(
-                df=df[[lbl_endog]],
-                var_name=lbl_endog,
-                threshold=quantile,
-                lim_num_dummies=len(weeks) * 2,
-            )
+            df_result = AddAutomaticSeasonalDummies(
+                var_name=lbl_endog, threshold=quantile, lim_num_dummies=len(weeks) * 2
+            ).transform(X=df[[lbl_endog]])
             num_dummies_new = len(df_result.columns) - 1
             assert num_dummies_new >= num_dummies
             num_dummies = num_dummies_new
@@ -102,8 +90,8 @@ class TestAddAutomaticSeasonalDummies:
         )
 
         with pytest.raises(RuntimeError) as e:
-            CalendarTransformer.add_automatic_seasonal_dummies(
-                df=df[[lbl_endog]], var_name=lbl_endog, threshold=0.5, lim_num_dummies=8
+            AddAutomaticSeasonalDummies(var_name=lbl_endog, threshold=0.5, lim_num_dummies=8).transform(
+                X=df[[lbl_endog]]
             )
 
             assert freq in str(e)
@@ -117,8 +105,8 @@ class TestAddAutomaticSeasonalDummies:
             index=pd.DatetimeIndex(pd.date_range("2017-01-01", periods=nobs, freq="W-FRI"), name=lbl_date),
         )
 
-        df_result = CalendarTransformer.add_automatic_seasonal_dummies(
-            df=df[[lbl_endog]], var_name=lbl_endog, threshold=3, lim_num_dummies=8
+        df_result = AddAutomaticSeasonalDummies(var_name=lbl_endog, threshold=3, lim_num_dummies=8).transform(
+            X=df[[lbl_endog]]
         )
 
         pd.testing.assert_frame_equal(df[[lbl_endog]], df_result)

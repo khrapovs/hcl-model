@@ -3,7 +3,7 @@ from typing import List, Union
 import pandas as pd
 from statsmodels.tsa.tsatools import add_trend
 
-from hcl_model.transformers.calendar import CalendarTransformer
+from hcl_model.transformers.add_automatic_seasonal_dummies import AddAutomaticSeasonalDummies
 from hcl_model.utils.get_duplicate_columns import get_duplicate_columns
 
 
@@ -43,7 +43,7 @@ def construct_calendar_exogenous(
     )
 
     df = add_trend(extended, trend=trend)
-    cal_transformer = CalendarTransformer()
+    cal_transformer = AddAutomaticSeasonalDummies()
 
     if splines_df is not None:
         df = cal_transformer.add_periodic_splines(df, degrees_of_freedom=int(splines_df))

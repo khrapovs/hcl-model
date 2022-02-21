@@ -6,7 +6,7 @@ import pandas as pd
 from statsmodels.tsa.tsatools import add_trend
 
 from hcl_model.model_hcl_generic import HandCraftedLinearModel
-from hcl_model.transformers.calendar import CalendarTransformer
+from hcl_model.transformers.add_periodic_splines import AddPeriodicSplines
 from tests.test_model_common import TestModelCommon
 
 
@@ -264,9 +264,7 @@ class TestHCLTransforms:
         lbl_splines = "splines"
         lbl_squared = "squared"
         g = {
-            lbl_splines: lambda df: CalendarTransformer().add_periodic_splines(
-                df=df, degrees_of_freedom=degrees_of_freedom
-            ),
+            lbl_splines: lambda df: AddPeriodicSplines(degrees_of_freedom=degrees_of_freedom).transform(X=df),
             lbl_squared: lambda df: df**2,
         }
         num_steps = 5

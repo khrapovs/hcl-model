@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from hcl_model.transformers.calendar import CalendarTransformer
+from hcl_model.transformers.add_automatic_seasonal_dummies import AddAutomaticSeasonalDummies
 from hcl_model.utils.construct_calendar_exogenous import construct_calendar_exogenous
 
 
@@ -31,7 +31,7 @@ class TestConstructCalendarExogenous:
         )
         lbl_endog = "endog"
         df = pd.DataFrame({lbl_endog: endog})
-        lbl_dummy = CalendarTransformer.lbl_auto_dummy
+        lbl_dummy = AddAutomaticSeasonalDummies.lbl_auto_dummy
 
         weeks = [1, 5, 10, 50]
         for week in weeks:
