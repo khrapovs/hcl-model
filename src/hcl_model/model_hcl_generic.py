@@ -109,7 +109,7 @@ class HandCraftedLinearModel(ModelBase):
         beta_simulated = pd.DataFrame(beta_simulated, columns=self.fit_results_.params.index)
         # simulate innovations for the right hand side of the model
         innovation = np.random.normal(
-            loc=0, scale=self.fit_results_.mse_resid ** 0.5, size=(num_steps, num_simulations)
+            loc=0, scale=self.fit_results_.mse_resid**0.5, size=(num_steps, num_simulations)
         )
 
         # stack observed endogenous series and empty container for future simulations
