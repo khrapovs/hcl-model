@@ -26,6 +26,10 @@ class TargetStructuralBreakCorrectionTransformer(BaseEstimator, TransformerMixin
         else:
             return X
 
+    @staticmethod
+    def inverse_transform(X: X_TYPE) -> X_TYPE:
+        return X
+
     def _get_series_without_structural_breaks(self, signal: pd.Series) -> pd.Series:
         change_points = self._get_change_points(y=signal)
         if len(change_points) <= 1:

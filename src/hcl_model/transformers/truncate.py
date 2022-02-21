@@ -26,3 +26,7 @@ class TruncateTransformer(BaseEstimator, TransformerMixin):
             return X[X.index > X.index.max() - pd.DateOffset(weeks=self.full_weight_weeks, days=1)]
         else:
             return X
+
+    @staticmethod
+    def inverse_transform(X: X_TYPE) -> X_TYPE:
+        return X

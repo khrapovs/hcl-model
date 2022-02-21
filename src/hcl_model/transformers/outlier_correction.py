@@ -45,6 +45,10 @@ class TargetOutlierCorrectionTransformer(BaseEstimator, TransformerMixin):
             else:
                 return self._correct_outliers(series=X)
 
+    @staticmethod
+    def inverse_transform(X: X_TYPE) -> X_TYPE:
+        return X
+
     def _correct_outliers(self, series: pd.Series) -> pd.Series:
         is_too_high = self.get_idx_too_high(series=series)
         is_too_low = self.get_idx_too_low(series=series)
