@@ -15,7 +15,7 @@ class TestSARIMAX(TestModelCommon):
         parameters = model.get_parameters()
 
         assert list(parameters.index) == ["sigma2"]
-        assert model._trend_fit is None
+        assert not hasattr(model, "trend_fit_")
         assert set(model.summary()[model.lbl_params].keys()) == {"sigma2"}
 
         model = SARIMAXModel(trend="c")
@@ -23,7 +23,7 @@ class TestSARIMAX(TestModelCommon):
         parameters = model.get_parameters()
 
         assert list(parameters.index) == ["sigma2"]
-        assert set(model._trend_fit.params.index.values) == {"const"}
+        assert set(model.trend_fit_.params.index.values) == {"const"}
         # trend is extracted before fitting SARIMAX, hence no 'const' among parameters
         assert set(model.summary()[model.lbl_params].keys()) == {"sigma2"}
 
@@ -32,7 +32,7 @@ class TestSARIMAX(TestModelCommon):
         parameters = model.get_parameters()
 
         assert list(parameters.index) == ["sigma2"]
-        assert set(model._trend_fit.params.index.values) == {"const", "trend"}
+        assert set(model.trend_fit_.params.index.values) == {"const", "trend"}
         assert set(model.summary()[model.lbl_params].keys()) == {"sigma2"}
 
         model = SARIMAXModel(trend="t")
@@ -40,7 +40,7 @@ class TestSARIMAX(TestModelCommon):
         parameters = model.get_parameters()
 
         assert list(parameters.index) == ["sigma2"]
-        assert set(model._trend_fit.params.index.values) == {"trend"}
+        assert set(model.trend_fit_.params.index.values) == {"trend"}
         assert set(model.summary()[model.lbl_params].keys()) == {"sigma2"}
 
         model = SARIMAXModel(trend="n")
@@ -48,7 +48,7 @@ class TestSARIMAX(TestModelCommon):
         parameters = model.get_parameters()
 
         assert list(parameters.index) == ["const", "time", "sigma2"]
-        assert model._trend_fit is None
+        assert not hasattr(model, "trend_fit_")
         assert set(model.summary()[model.lbl_params].keys()) == {"const", "time", "sigma2"}
 
     def test_model_prediction(self):

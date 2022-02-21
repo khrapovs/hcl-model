@@ -3,6 +3,9 @@
 ## 0.5.6 (2022-02-21)
 ### Added
 - Trivial `inverse_transform` method that returns the input to `TruncateTransformer`, `TargetOutlierCorrectionTransformer`, and `TargetStructuralBreakCorrectionTransformer`. This addition allows using these transformers in `sklearn.compose.TransformedTargetRegressor` as `tranformer` argument for trivial inverse transform of pipeline predictions.  
+### Changed
+- Expose fitted attributes with trailing underscore: `x_train_`, `y_train_`, `fit_results_`.
+- Expose model parameters, e.g. `endog_transform` and `exog_transform` in `H andCraftedLinearModel`.
 
 ## 0.5.5 (2022-02-18)
 ### Changed

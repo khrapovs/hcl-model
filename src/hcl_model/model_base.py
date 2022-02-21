@@ -19,11 +19,6 @@ class ModelBase(ABC):
     lbl_resid_kurtosis = "error_kurtosis"
     lbl_params = "parameters"
 
-    def __init__(self) -> None:
-        self._fit_results = None
-        self._y_train = None
-        self._x_train = None
-
     def fit(self, X: Optional[pd.DataFrame], y: Union[pd.Series, np.ndarray], **kwargs):
         """
         Fit the model using some provided training data.
@@ -33,7 +28,7 @@ class ModelBase(ABC):
             In case of np.ndarray its index is inherited from `X`.
             In case of np.ndarray and if `X` is `None`, then `TypeError` is risen.
         """
-        self._x_train, self._y_train = check_X_y(X=X, y=y)
+        self.x_train_, self.y_train_ = check_X_y(X=X, y=y)
         self._fit(**kwargs)
         return self
 
@@ -156,14 +151,14 @@ class ModelBase(ABC):
 
         :return: Error as a float in percent.
         """
-        return ((self._y_train - self._get_fitted_values()) / self._y_train).abs().mean() * 100
+        return ((self.y_train_ - self._get_fitted_values()) / self.y_train_).abs().mean() * 100
 
     def _get_rsquared(self) -> float:
         """Mean absolute percentage error on in-sample.
 
         :return: Error as a float in percent.
         """
-        return np.corrcoef(self._get_fitted_values(), self._y_train.values)[0, 1] ** 2
+        return np.corrcoef(self._get_fitted_values(), self.y_train_.values)[0, 1] ** 2
 
     def _get_residual_moment(self, degree: int = 1, center_first: bool = False) -> float:
         """Get residual moment.
@@ -196,26 +191,26 @@ class ModelBase(ABC):
         :param exog: exogenous data
         :raise RuntimeError:
         """
-        x_train_and_test = pd.concat([self._x_train, exog]) if exog is not None else self._x_train
+        x_train_and_test = pd.concat([self.x_train_, exog]) if exog is not None else self.x_train_
         if x_train_and_test is not None and x_train_and_test.shape[0] < nobs + num_steps:
             raise RuntimeError("Provided exogenous data does not cover the whole prediction horizon!")
 
     def _get_endog_name(self) -> str:
-        return self._y_train.name
+        return self.y_train_.name
 
     def _get_index_name(self) -> str:
-        return self._y_train.index.name
+        return self.y_train_.index.name
 
     @property
     def _nobs(self) -> int:
-        return self._y_train.shape[0]
+        return self.y_train_.shape[0]
 
     def get_parameters(self) -> pd.Series:
         """Get model parameters.
 
         :return: A series of model parameters.
         """
-        return self._fit_results.params
+        return self.fit_results_.params
 
     @staticmethod
     def get_quantile_names(quantile_levels: List[float]) -> List[str]:
