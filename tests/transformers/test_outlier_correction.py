@@ -82,8 +82,10 @@ class TestTargetOutlierCorrectionTransformer:
         y_corrected = outliers_detector.transform(X=y.values if y_type == "ndarray" else y)
         if y_type == "ndarray":
             np.array_equal(y.values, y_corrected)
+            np.array_equal(outliers_detector.inverse_transform(X=y_corrected), y_corrected)
         else:
             assert_series_equal(y, y_corrected)
+            assert_series_equal(outliers_detector.inverse_transform(X=y_corrected), y_corrected)
 
     @pytest.mark.parametrize("y_type", ["series", "ndarray"])
     @pytest.mark.parametrize("six_sigma_multiplier", [3, 4, 5])
@@ -139,8 +141,10 @@ class TestTargetOutlierCorrectionTransformer:
 
         if y_type == "ndarray":
             np.array_equal(y.values, y_corrected)
+            np.array_equal(outliers_detector.inverse_transform(X=y_corrected), y_corrected)
         else:
             assert_series_equal(y, y_corrected)
+            assert_series_equal(outliers_detector.inverse_transform(X=y_corrected), y_corrected)
 
     @pytest.mark.parametrize("y_type", ["series", "ndarray"])
     @pytest.mark.parametrize("six_sigma_multiplier", [3, 4, 5])
@@ -165,8 +169,10 @@ class TestTargetOutlierCorrectionTransformer:
 
         if y_type == "ndarray":
             np.array_equal(y.values, y_corrected)
+            np.array_equal(outliers_detector.inverse_transform(X=y_corrected), y_corrected)
         else:
             assert_series_equal(y, y_corrected)
+            assert_series_equal(outliers_detector.inverse_transform(X=y_corrected), y_corrected)
 
     def test_get_series_with_outliers_and_with_wrong_method(self) -> None:
         date_col = "date"

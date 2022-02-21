@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.6 (2022-02-21)
+### Added
+- Trivial `inverse_transform` method that returns the input to `TruncateTransformer`, `TargetOutlierCorrectionTransformer`, and `TargetStructuralBreakCorrectionTransformer`. This addition allows using these transformers in `sklearn.compose.TransformedTargetRegressor` as `tranformer` argument for trivial inverse transform of pipeline predictions.  
+
 ## 0.5.5 (2022-02-18)
 ### Changed
 - If `num_steps` is `None`, get it from number of `X` observations in `hcl_model.model_base.ModelBase.predict`.

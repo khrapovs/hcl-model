@@ -16,13 +16,16 @@ class TestStructuralBreakCorrectionTransformer:
         series = pd.Series(np.append(series1, series2))
         X = series.values if y_type == "ndarray" else series
 
-        series_corrected = TargetStructuralBreakCorrectionTransformer(structural_break_correction=False).transform(X=X)
+        transformer = TargetStructuralBreakCorrectionTransformer(structural_break_correction=False)
+        series_corrected = transformer.transform(X=X)
 
         assert len(series_corrected) == len(series)
         if y_type == "ndarray":
             np.array_equal(series.values, series_corrected)
+            np.array_equal(transformer.inverse_transform(X=series_corrected), series_corrected)
         else:
             assert_series_equal(series, series_corrected)
+            assert_series_equal(transformer.inverse_transform(X=series_corrected), series_corrected)
 
     def test_correction_series_with_structural_break(self, y_type: str) -> None:
         series1 = np.ones(100)
@@ -30,14 +33,17 @@ class TestStructuralBreakCorrectionTransformer:
         series = pd.Series(np.append(series1, series2))
         X = series.values if y_type == "ndarray" else series
 
-        series_corrected = TargetStructuralBreakCorrectionTransformer().transform(X=X)
+        transformer = TargetStructuralBreakCorrectionTransformer()
+        series_corrected = transformer.transform(X=X)
         series_corrected_expected = pd.Series(np.ones(200) + 1)
 
         assert len(series_corrected) == len(series)
         if y_type == "ndarray":
             np.array_equal(series_corrected_expected.values, series_corrected)
+            np.array_equal(transformer.inverse_transform(X=series_corrected), series_corrected)
         else:
             assert_series_equal(series_corrected_expected, series_corrected)
+            assert_series_equal(transformer.inverse_transform(X=series_corrected), series_corrected)
 
     def test_adjusted_variability_still_zero(self, y_type: str) -> None:
         random.seed(101)
@@ -70,22 +76,28 @@ class TestStructuralBreakCorrectionTransformer:
         series = pd.concat([series1, series2])
         X = series.values if y_type == "ndarray" else series
 
-        series_corrected = TargetStructuralBreakCorrectionTransformer().transform(X=X)
+        transformer = TargetStructuralBreakCorrectionTransformer()
+        series_corrected = transformer.transform(X=X)
         series_corrected_last_part = series_corrected[100:]
 
         if y_type == "ndarray":
             np.array_equal(series_corrected_last_part, series2)
+            np.array_equal(transformer.inverse_transform(X=series_corrected), series_corrected)
         else:
             assert_series_equal(series_corrected_last_part, series2)
+            assert_series_equal(transformer.inverse_transform(X=series_corrected), series_corrected)
 
     def test_correction_series_without_structural_break(self, y_type: str) -> None:
         series = pd.Series(np.ones(200))
         X = series.values if y_type == "ndarray" else series
 
-        series_corrected = TargetStructuralBreakCorrectionTransformer().transform(X=X)
+        transformer = TargetStructuralBreakCorrectionTransformer()
+        series_corrected = transformer.transform(X=X)
 
         assert len(series_corrected) == len(series)
         if y_type == "ndarray":
             np.array_equal(series.values, series_corrected)
+            np.array_equal(transformer.inverse_transform(X=series_corrected), series_corrected)
         else:
             assert_series_equal(series, series_corrected)
+            assert_series_equal(transformer.inverse_transform(X=series_corrected), series_corrected)
