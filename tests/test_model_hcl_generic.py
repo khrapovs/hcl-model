@@ -293,6 +293,10 @@ class TestHCLTransforms:
         assert len(transformed_df.columns) == 2 * x_train.shape[1] + degrees_of_freedom
 
 
+def some_weights(y: np.ndarray) -> np.ndarray:
+    return np.power(np.arange(start=0, stop=1, step=1 / len(y)), 2)
+
+
 class TestHCLWeightedTransforms:
     lbl_date = "date"
     lbl_value = "value"
@@ -308,25 +312,19 @@ class TestHCLWeightedTransforms:
         data = add_trend(endog, trend="ct")
         data["x3"] = 999
 
-        f = {
-            "lag1": lambda y: y.shift(1),
-            "local_mean": lambda y: y.shift(1).ewm(span=5).mean(),
-        }
-
+        f = {"lag1": lambda y: y.shift(1), "local_mean": lambda y: y.shift(1).ewm(span=5).mean()}
         g = {"const": lambda x: x + 10, "trend": lambda x: -x}
 
-        weights = np.power(np.arange(start=0, stop=1, step=1 / len(endog)), 2)
-
-        return data, f, g, weights
+        return data, f, g
 
     def test_model_fit(self):
-        data, f, g, weights = self.generate_input()
+        data, f, g = self.generate_input()
 
         y_train = data[self.lbl_value]
         x_train = data.iloc[:, 1:]
 
-        model = HandCraftedLinearModel(endog_transform=f, exog_transform=g)
-        model.fit(y=y_train, X=x_train, weights=weights)
+        model = HandCraftedLinearModel(endog_transform=f, exog_transform=g, weights=some_weights)
+        model.fit(y=y_train, X=x_train)
 
         parameters = model.get_parameters()
 
@@ -340,16 +338,15 @@ class TestHCLWeightedTransforms:
         assert set(model.summary()[model.lbl_params].keys()) == keys
 
     def test_model_prediction(self):
-        data, f, g, weights = self.generate_input()
+        data, f, g = self.generate_input()
 
         num_steps = 5
-        model = HandCraftedLinearModel(endog_transform=f, exog_transform=g)
+        model = HandCraftedLinearModel(endog_transform=f, exog_transform=g, weights=some_weights)
         y_train = data.loc[data.index[:-num_steps], self.lbl_value]
         x_train = data.iloc[:-num_steps, 1:]
         x_test = data.iloc[-num_steps:, 1:]
-        weights_train = weights[:-num_steps]
 
-        model.fit(y=y_train, X=x_train, weights=weights_train)
+        model.fit(y=y_train, X=x_train)
         forecast = model.predict(num_steps=num_steps, X=x_test)
 
         assert isinstance(forecast, pd.DataFrame)
