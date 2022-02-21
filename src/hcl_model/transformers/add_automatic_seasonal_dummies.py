@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import pandas as pd
 from scipy.stats import median_abs_deviation
+from sklearn.base import TransformerMixin, BaseEstimator
 
 
-class AddAutomaticSeasonalDummies:
+class AddAutomaticSeasonalDummies(BaseEstimator, TransformerMixin):
     lbl_auto_dummy = "automatic_dummy_{}"
 
     def __init__(self, var_name: str, lim_num_dummies: int = 5, threshold: float = 3) -> None:

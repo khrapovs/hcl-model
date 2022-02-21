@@ -3,12 +3,13 @@ from __future__ import annotations
 from typing import Iterable
 
 import pandas as pd
+from sklearn.base import TransformerMixin, BaseEstimator
 
 from hcl_model.labels import LabelsCommon, LabelsExog
 from hcl_model.utils.calendar_reader import CalendarReader
 
 
-class AddHolidayDummies:
+class AddHolidayDummies(BaseEstimator, TransformerMixin):
     lbl = LabelsCommon()
     lbl_exog = LabelsExog()
 
