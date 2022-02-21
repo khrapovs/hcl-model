@@ -9,11 +9,16 @@ from statsmodels.regression.linear_model import WLS
 from hcl_model.model_base import ModelBase
 
 
+def trivial_weights(y: np.ndarray) -> float:
+    return 1.0
+
+
 class HandCraftedLinearModel(ModelBase):
     r"""Hand Crafted Linear Model
 
     :param endog_transform: transformation functions of the endogenous variable
     :param exog_transform: transformation functions of the exogenous variables
+    :param weights: weights function that is applied to endogenous variable and passed to WLS for fitting
 
     Notes
     -----
@@ -62,14 +67,22 @@ class HandCraftedLinearModel(ModelBase):
     lbl_original_endog = "original_endog"
     lbl_original_exog = "original_exog"
 
-    def __init__(self, endog_transform: Dict[str, Callable] = None, exog_transform: Dict[str, Callable] = None) -> None:
+    def __init__(
+        self,
+        endog_transform: Dict[str, Callable] = None,
+        exog_transform: Dict[str, Callable] = None,
+        weights: Callable = trivial_weights,
+    ) -> None:
         self.endog_transform = self._init_transform(name=self.lbl_original_endog, transform=endog_transform)
         self.exog_transform = self._init_transform(name=self.lbl_original_exog, transform=exog_transform)
+        self.weights = weights
 
-    def _fit(self, weights: Union[Sequence, float] = 1.0) -> None:
+    def _fit(self) -> None:
         transformed = self._transform_all_data(endog=self.y_train_, exog=self.x_train_)
         rhs_vars = self._convert_transformed_dict_to_frame(transformed=transformed)
-        self.fit_results_ = WLS(endog=self.y_train_, exog=rhs_vars, weights=weights, missing="drop").fit()
+        self.fit_results_ = WLS(
+            endog=self.y_train_, exog=rhs_vars, weights=self.weights(y=self.y_train_), missing="drop"
+        ).fit()
 
     def _predict(
         self,
