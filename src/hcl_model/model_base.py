@@ -34,7 +34,7 @@ class ModelBase(ABC):
 
     @abstractmethod
     def _fit(self, **kwargs) -> None:
-        pass
+        """Core fit method."""
 
     def predict(
         self,
@@ -83,7 +83,7 @@ class ModelBase(ABC):
     def _predict(
         self, num_steps: int, X: pd.DataFrame = None, quantile_levels: List[float] = None, **kwargs
     ) -> pd.DataFrame:
-        pass
+        """Core predict method."""
 
     def simulate(self, num_steps: int, num_simulations: int, X: pd.DataFrame = None, **kwargs) -> pd.DataFrame:
         """
@@ -99,13 +99,13 @@ class ModelBase(ABC):
 
     @abstractmethod
     def _simulate(self, num_steps: int, num_simulations: int, **kwargs) -> pd.DataFrame:
-        pass
+        """Core simulate method."""
 
     @abstractmethod
     def _compute_prediction_quantiles(
         self, num_steps: int, num_simulations: int = None, quantile_levels: List[float] = None, X: pd.DataFrame = None
     ) -> pd.DataFrame:
-        pass
+        """Compute prediction quantiles."""
 
     def summary(self) -> pd.Series:
         """A summary of in-sample model performance KPIs.
@@ -218,4 +218,4 @@ class ModelBase(ABC):
 
     @abstractmethod
     def _add_trend(self, df: pd.DataFrame) -> pd.DataFrame:
-        pass
+        """Add trend."""
