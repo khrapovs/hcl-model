@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.2 (2022-02-22)
+### Changed
+- Refactor `hcl_model.utils.decayed_weights.decayed_weights` and allow `None` as input for `full_weight_obs` and `downweight_order`. See more details in the docstring.
+
 ## 0.6.1 (2022-02-22)
 ### Changed
 - Rename argument `full_weight_weeks` to `full_weight_obs` in `hcl_model.transformers.truncate.TruncateTransformer`. Truncation is now calculated in terms of number of observations instead of datetime indexing to accommodate numpy arrays.
