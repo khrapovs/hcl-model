@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.1 (2022-02-22)
+### Changed
+- Rename argument `full_weight_weeks` to `full_weight_obs` in `hcl_model.transformers.truncate.TruncateTransformer`. Truncation is now calculated in terms of number of observations instead of datetime indexing to accommodate numpy arrays.
+
 ## 0.6.0 (2022-02-21)
 ### Changed
 - Break down `CalendarTransformer` into `sklearn` compatible transformers: `AddAutomaticSeasonalDummies`, `AddHolidayDummies`, `AddHolidayTriangles`, and `AddPeriodicSplines`.
