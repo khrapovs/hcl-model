@@ -21,6 +21,20 @@ jobs:
           python-version: 3.9
       - uses: jamescurtin/isort-action@master
 
+  autoflake:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        run: |
+          pip install autoflake
+      - name: Run autoflake check
+        run: |
+          autoflake --in-place --remove-unused-variables --remove-all-unused-imports -r -c ./src ./tests
+
   test:
     name: Pytest
     runs-on: ${{ matrix.os }}
@@ -34,20 +48,16 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
-
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-
       - name: Install dependencies
         run: |
           pip install -e .[test]
-
       - name: Run test suite
         run: |
           pytest --cov=hcl_model --cov-report=xml
-
       - name: Publish code coverage
         uses: codecov/codecov-action@v2
         with:
