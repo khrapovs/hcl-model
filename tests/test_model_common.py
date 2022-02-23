@@ -1,8 +1,8 @@
 from abc import abstractmethod
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 import pytest
 from statsmodels.tsa.tsatools import add_trend
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pandas as pd
 from patsy import dmatrix
-from sklearn.base import TransformerMixin, BaseEstimator
+from sklearn.base import BaseEstimator, TransformerMixin
 
 from hcl_model.labels import LabelsCommon, LabelsExog
 

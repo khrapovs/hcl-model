@@ -2,7 +2,7 @@ name: pytest
 on: push
 
 jobs:
-  lint:
+  black:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -11,6 +11,15 @@ jobs:
           options: "--check --verbose"
           src: "."
           version: "22.1.0"
+
+  isort:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - uses: jamescurtin/isort-action@master
 
   test:
     name: Pytest

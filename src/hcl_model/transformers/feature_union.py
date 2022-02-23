@@ -1,5 +1,5 @@
 from functools import reduce
-from typing import Union, List
+from typing import List, Union
 
 import pandas as pd
 from sklearn.pipeline import FeatureUnion, _name_estimators

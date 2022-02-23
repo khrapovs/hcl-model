@@ -1,5 +1,5 @@
 import functools
-from typing import Dict, Callable
+from typing import Callable, Dict
 
 import numpy as np
 import pandas as pd

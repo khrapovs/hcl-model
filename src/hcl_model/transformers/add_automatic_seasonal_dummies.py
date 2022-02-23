@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pandas as pd
 from scipy.stats import median_abs_deviation
-from sklearn.base import TransformerMixin, BaseEstimator
+from sklearn.base import BaseEstimator, TransformerMixin
 
 
 class AddAutomaticSeasonalDummies(BaseEstimator, TransformerMixin):
