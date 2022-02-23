@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Iterable
 
 import pandas as pd
-from sklearn.base import TransformerMixin, BaseEstimator
+from sklearn.base import BaseEstimator, TransformerMixin
 
 from hcl_model.labels import LabelsCommon
 from hcl_model.utils.calendar_reader import CalendarReader

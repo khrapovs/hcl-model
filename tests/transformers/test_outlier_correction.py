@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 from pandas._testing import assert_series_equal
 
-from hcl_model.transformers.outlier_correction import TargetOutlierCorrectionTransformer, CorrectOutliersMethodNames
+from hcl_model.transformers.outlier_correction import CorrectOutliersMethodNames, TargetOutlierCorrectionTransformer
 
 
 class TestTargetOutlierCorrectionTransformer:
