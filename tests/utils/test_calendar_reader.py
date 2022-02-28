@@ -13,7 +13,7 @@ class TestCalendarReader:
     lbl_country_code_cn = "CN"
     lbl_country_code_tw = "TW"
 
-    def test_get_holidays(self):
+    def test_get_holidays(self) -> None:
         cal_reader = CalendarReader()
 
         df = cal_reader.get_holidays(self.lbl_new_year, self.lbl_country_code_de, self.from_year, self.to_year)
@@ -23,7 +23,7 @@ class TestCalendarReader:
         assert df.index.year[0] == self.from_year
         assert df.index.year[-1] == self.to_year - 1
 
-    def test_get_calendar(self):
+    def test_get_calendar(self) -> None:
         cal_reader = CalendarReader()
 
         assert isinstance(cal_reader._get_calendar(self.lbl_country_code_de), Calendar)

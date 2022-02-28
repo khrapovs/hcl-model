@@ -32,7 +32,7 @@ class SARIMAXModel(ModelBase):
         self.trend = trend
         self.enforce_stationarity = enforce_stationarity
 
-    def _fit(self, **kwargs) -> None:
+    def _fit(self) -> None:
         self.y_train_ = self._remove_trend(self.y_train_)
         self.fit_results_ = SARIMAX(
             self.y_train_,
@@ -52,7 +52,7 @@ class SARIMAXModel(ModelBase):
             .rename_axis(index=self.y_train_.index.name)
         )
 
-    def _simulate(self, num_steps: int, num_simulations: int, X: pd.DataFrame = None, **kwargs) -> pd.DataFrame:
+    def _simulate(self, num_steps: int, num_simulations: int, X: pd.DataFrame = None) -> pd.DataFrame:
         self.y_train_ = self._remove_trend(self.y_train_)
         sim_model = SARIMAX(
             pd.Series(index=X.index, dtype=float),
@@ -75,7 +75,7 @@ class SARIMAXModel(ModelBase):
         return self.fit_results_.resid
 
     def _compute_prediction_quantiles(
-        self, num_steps: int, quantile_levels: List[float] = None, X: pd.DataFrame = None, **kwargs
+        self, num_steps: int, num_simulations: int = None, quantile_levels: List[float] = None, X: pd.DataFrame = None
     ) -> pd.DataFrame:
         forecast = self.fit_results_.get_forecast(steps=num_steps, exog=X)
         out = dict()

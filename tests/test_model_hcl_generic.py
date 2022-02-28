@@ -1,5 +1,6 @@
 import functools
-from typing import Callable, Dict
+import typing
+from typing import Callable, Dict, Tuple
 
 import numpy as np
 import pandas as pd
@@ -11,7 +12,7 @@ from tests.test_model_common import TestModelCommon
 
 
 class TestHCL(TestModelCommon):
-    def test_model_fit(self):
+    def test_model_fit(self) -> None:
         endog, x_train = self.generate_data()
         y_train = endog[self.lbl_value]
 
@@ -23,7 +24,7 @@ class TestHCL(TestModelCommon):
         assert list(parameters.index) == params_expected
         assert set(model.summary()[model.lbl_params].keys()) == set(params_expected)
 
-    def test_model_prediction(self):
+    def test_model_prediction(self) -> None:
         endog, exog = self.generate_data()
         model = HandCraftedLinearModel()
         num_steps = 10
@@ -41,7 +42,7 @@ class TestHCL(TestModelCommon):
         assert forecast.index.name == self.lbl_date
         assert isinstance(forecast.index, pd.DatetimeIndex)
 
-    def test_model_simulation(self):
+    def test_model_simulation(self) -> None:
         endog, exog = self.generate_data()
         model = HandCraftedLinearModel()
         num_steps = 10
@@ -59,12 +60,12 @@ class TestHCL(TestModelCommon):
         assert simulations.index.name == self.lbl_date
         assert isinstance(simulations.index, pd.DatetimeIndex)
 
-    def test_model_percentiles(self):
+    def test_model_percentiles(self) -> None:
         endog, exog = self.generate_data()
         model = HandCraftedLinearModel()
         num_steps = 10
         num_simulations = 5
-        quantile_levels = [5, 95]
+        quantile_levels = [5.0, 95.0]
 
         y_train = endog.loc[endog.index[:-num_steps], self.lbl_value]
         x_train = exog.loc[endog.index[:-num_steps]]
@@ -81,7 +82,7 @@ class TestHCL(TestModelCommon):
         assert forecast.index.name == self.lbl_date
         assert isinstance(forecast.index, pd.DatetimeIndex)
 
-    def test_model_summary(self):
+    def test_model_summary(self) -> None:
         endog, exog = self.generate_data()
 
         model = HandCraftedLinearModel()
@@ -126,11 +127,14 @@ class TestHCLTransforms:
             "local_mean": lambda y: y.shift(1).ewm(span=5).mean(),
         }
 
-    def test_transform_lags(self):
+    def test_transform_lags(self) -> None:
         lags = [1, 2, 10]
         col_name = "lag_{}"
 
-        f = {col_name.format(lag): functools.partial(lambda lag, y: y.shift(lag), lag) for lag in lags}
+        f = {
+            col_name.format(lag): typing.cast(Callable, functools.partial(lambda lag, y: y.shift(lag), lag))
+            for lag in lags
+        }
         model = HandCraftedLinearModel(endog_transform=f)
         endog = pd.Series(np.arange(5))
 
@@ -140,7 +144,7 @@ class TestHCLTransforms:
         for key, val in transformed.items():
             pd.testing.assert_series_equal(val, transformed_expected[key])
 
-    def test_transform_data(self):
+    def test_transform_data(self) -> None:
         data = self.generate_input()
         f = self._get_endog_transform()
         g = self._get_exog_transform()
@@ -170,7 +174,7 @@ class TestHCLTransforms:
         for key, val in transformed_exog_expected.items():
             pd.testing.assert_frame_equal(val, transformed[key])
 
-    def test_convert_transformed_dict_to_frame(self):
+    def test_convert_transformed_dict_to_frame(self) -> None:
         data = self.generate_input()
         f = self._get_endog_transform()
         g = self._get_exog_transform()
@@ -188,7 +192,7 @@ class TestHCLTransforms:
 
         assert set(transformed_df.columns) == keys
 
-    def test_model_fit(self):
+    def test_model_fit(self) -> None:
         data = self.generate_input()
         f = self._get_endog_transform()
         g = self._get_exog_transform()
@@ -209,7 +213,7 @@ class TestHCLTransforms:
         assert parameters.isna().sum() == 0
         assert set(model.summary()[model.lbl_params].keys()) == keys
 
-    def test_model_prediction(self):
+    def test_model_prediction(self) -> None:
         data = self.generate_input()
         f = self._get_endog_transform()
         g = self._get_exog_transform()
@@ -230,14 +234,14 @@ class TestHCLTransforms:
         assert forecast.index.name == self.lbl_date
         assert isinstance(forecast.index, pd.DatetimeIndex)
 
-    def test_model_percentiles(self):
+    def test_model_percentiles(self) -> None:
         data = self.generate_input()
         f = self._get_endog_transform()
         g = self._get_exog_transform()
 
         num_steps = 5
         num_simulations = 5
-        quantile_levels = [5, 95]
+        quantile_levels = [5.0, 95.0]
 
         model = HandCraftedLinearModel(endog_transform=f, exog_transform=g)
         y_train = data.loc[data.index[:-num_steps], self.lbl_value]
@@ -257,7 +261,7 @@ class TestHCLTransforms:
         assert forecast.index.name == self.lbl_date
         assert isinstance(forecast.index, pd.DatetimeIndex)
 
-    def test_with_calendar_transform(self):
+    def test_with_calendar_transform(self) -> None:
         data = self.generate_input()
         f = self._get_endog_transform()
         degrees_of_freedom = 4
@@ -299,7 +303,7 @@ class TestHCLWeightedTransforms:
     lbl_date = "date"
     lbl_value = "value"
 
-    def generate_input(self):
+    def generate_input(self) -> Tuple[pd.DataFrame, Dict[str, Callable], Dict[str, Callable]]:
         nobs = 30
         endog = pd.Series(
             np.arange(1, nobs + 1) + np.random.normal(size=nobs, scale=1e-1),
@@ -315,7 +319,7 @@ class TestHCLWeightedTransforms:
 
         return data, f, g
 
-    def test_model_fit(self):
+    def test_model_fit(self) -> None:
         data, f, g = self.generate_input()
 
         y_train = data[self.lbl_value]
@@ -335,7 +339,7 @@ class TestHCLWeightedTransforms:
         assert parameters.isna().sum() == 0
         assert set(model.summary()[model.lbl_params].keys()) == keys
 
-    def test_model_prediction(self):
+    def test_model_prediction(self) -> None:
         data, f, g = self.generate_input()
 
         num_steps = 5

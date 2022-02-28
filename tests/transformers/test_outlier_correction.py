@@ -114,7 +114,7 @@ class TestTargetOutlierCorrectionTransformer:
         nr_outliers_found = sum(y != y_corrected)
 
         if y_type == "series":
-            assert y.name == y_corrected.name
+            assert y.name == y_corrected.name  # type: ignore
         assert sum(abs(y_corrected)) <= sum(abs(y))
         assert nr_outliers_found == expected_nr_outliers_found
 
@@ -189,6 +189,6 @@ class TestTargetOutlierCorrectionTransformer:
 
         with pytest.raises(NotImplementedError):
             outliers_detector = TargetOutlierCorrectionTransformer(
-                outlier_correction_method="magic", six_sigma_multiplier=3
+                outlier_correction_method="magic", six_sigma_multiplier=3  # type: ignore
             )
             outliers_detector.transform(X=y)

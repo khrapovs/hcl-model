@@ -22,7 +22,7 @@ class TestAddHolidayTriangles:
             index=pd.date_range(start="2015-01-01", freq="7 D", periods=53 * 3),
         )
 
-    def test_add_holiday_triangles(self):
+    def test_add_holiday_triangles(self) -> None:
         xreg = self.get_xreg_example()
 
         lh_factors = [1.0, 2.0]

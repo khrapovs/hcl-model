@@ -5,7 +5,7 @@ from tests.test_model_common import TestModelCommon
 
 
 class TestSARIMAX(TestModelCommon):
-    def test_model_fit(self):
+    def test_model_fit(self) -> None:
 
         endog, exog = self.generate_data()
 
@@ -51,7 +51,7 @@ class TestSARIMAX(TestModelCommon):
         assert not hasattr(model, "trend_fit_")
         assert set(model.summary()[model.lbl_params].keys()) == {"const", "time", "sigma2"}
 
-    def test_model_prediction(self):
+    def test_model_prediction(self) -> None:
         endog, exog = self.generate_data()
         model = SARIMAXModel(trend="ct")
         num_steps = 10
@@ -67,7 +67,7 @@ class TestSARIMAX(TestModelCommon):
         assert forecast.index.name == self.lbl_date
         assert isinstance(forecast.index, pd.DatetimeIndex)
 
-    def test_model_simulation(self):
+    def test_model_simulation(self) -> None:
         endog, exog = self.generate_data()
         model = SARIMAXModel(trend="ct")
         num_steps = 10
@@ -84,12 +84,12 @@ class TestSARIMAX(TestModelCommon):
         assert simulations.index.name == self.lbl_date
         assert isinstance(simulations.index, pd.DatetimeIndex)
 
-    def test_model_percentiles(self):
+    def test_model_percentiles(self) -> None:
         endog, exog = self.generate_data()
         model = SARIMAXModel(trend="ct")
         num_steps = 10
         num_simulations = 5
-        quantile_levels = [5, 95]
+        quantile_levels = [5.0, 95.0]
 
         y_train = endog.loc[endog.index[:-num_steps], self.lbl_value]
         x_train = exog.loc[endog.index[:-num_steps]]
@@ -105,7 +105,7 @@ class TestSARIMAX(TestModelCommon):
         assert forecast.index.name == self.lbl_date
         assert isinstance(forecast.index, pd.DatetimeIndex)
 
-    def test_model_summary(self):
+    def test_model_summary(self) -> None:
         endog, exog = self.generate_data()
 
         model = SARIMAXModel(trend="n")

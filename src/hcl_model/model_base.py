@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import List, Optional, Union
+from typing import Any, List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -18,8 +20,9 @@ class ModelBase(ABC):
     lbl_resid_skewness = "error_skewness"
     lbl_resid_kurtosis = "error_kurtosis"
     lbl_params = "parameters"
+    fit_results_: Any
 
-    def fit(self, X: Optional[pd.DataFrame], y: Union[pd.Series, np.ndarray], **kwargs):
+    def fit(self, X: Optional[pd.DataFrame], y: Union[pd.Series, np.ndarray]) -> ModelBase:
         """
         Fit the model using some provided training data.
 
@@ -29,11 +32,11 @@ class ModelBase(ABC):
             In case of np.ndarray and if `X` is `None`, then `TypeError` is risen.
         """
         self.x_train_, self.y_train_ = check_X_y(X=X, y=y)
-        self._fit(**kwargs)
+        self._fit()
         return self
 
     @abstractmethod
-    def _fit(self, **kwargs) -> None:
+    def _fit(self) -> None:
         """Core fit method."""
 
     def predict(
@@ -42,7 +45,6 @@ class ModelBase(ABC):
         num_steps: int = None,
         quantile_levels: List[float] = None,
         num_simulations: int = None,
-        **kwargs
     ) -> pd.DataFrame:
         """
         Forecast the values and prediction intervals
@@ -71,7 +73,7 @@ class ModelBase(ABC):
             else:
                 raise ValueError("Either `num_steps` or `X` should be provided")
         self._check_exogenous(exog=X, nobs=self._nobs, num_steps=num_steps)
-        predictions = self._predict(num_steps=num_steps, X=X, quantile_levels=quantile_levels, **kwargs)
+        predictions = self._predict(num_steps=num_steps, X=X, quantile_levels=quantile_levels)
         if quantile_levels is not None:
             quantiles = self._compute_prediction_quantiles(
                 num_steps=num_steps, quantile_levels=quantile_levels, X=X, num_simulations=num_simulations
@@ -80,12 +82,10 @@ class ModelBase(ABC):
         return self._add_trend(df=predictions)
 
     @abstractmethod
-    def _predict(
-        self, num_steps: int, X: pd.DataFrame = None, quantile_levels: List[float] = None, **kwargs
-    ) -> pd.DataFrame:
+    def _predict(self, num_steps: int, X: pd.DataFrame = None, quantile_levels: List[float] = None) -> pd.DataFrame:
         """Core predict method."""
 
-    def simulate(self, num_steps: int, num_simulations: int, X: pd.DataFrame = None, **kwargs) -> pd.DataFrame:
+    def simulate(self, num_steps: int, num_simulations: int, X: pd.DataFrame = None) -> pd.DataFrame:
         """
         Simulate `num_simulations` realizations of the next `num_steps` values
 
@@ -95,10 +95,10 @@ class ModelBase(ABC):
         :return: A DataFrame containing simulations
         """
         self._check_exogenous(exog=X, nobs=self._nobs, num_steps=num_steps)
-        return self._simulate(num_steps=num_steps, num_simulations=num_simulations, X=X, **kwargs)
+        return self._simulate(num_steps=num_steps, num_simulations=num_simulations, X=X)
 
     @abstractmethod
-    def _simulate(self, num_steps: int, num_simulations: int, **kwargs) -> pd.DataFrame:
+    def _simulate(self, num_steps: int, num_simulations: int, X: pd.DataFrame = None) -> pd.DataFrame:
         """Core simulate method."""
 
     @abstractmethod

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Callable, Dict, List, Optional, Sequence, Union
+from typing import Callable, Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -88,7 +88,6 @@ class HandCraftedLinearModel(ModelBase):
         self,
         num_steps: int,
         X: pd.DataFrame = None,
-        weights: Union[Sequence, float] = 1.0,
         quantile_levels: List[float] = None,
         num_simulations: int = None,
     ) -> pd.DataFrame:
@@ -105,7 +104,7 @@ class HandCraftedLinearModel(ModelBase):
 
         return endog_updated.iloc[self._nobs :].to_frame().rename_axis(index=self.y_train_.index.name)
 
-    def _simulate(self, num_steps: int, num_simulations: int, X: pd.DataFrame = None, **kwargs) -> pd.DataFrame:
+    def _simulate(self, num_steps: int, num_simulations: int, X: pd.DataFrame = None) -> pd.DataFrame:
         num_params = self.get_parameters().shape[0]
         simulation = np.empty((num_steps, num_simulations))
 
