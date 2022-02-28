@@ -35,7 +35,7 @@ class TargetStructuralBreakCorrectionTransformer(BaseEstimator, TransformerMixin
         if len(change_points) <= 1:
             return signal
         else:
-            change_points = np.concatenate(([0], change_points))
+            change_points = np.concatenate((np.array([0]), change_points))
             current_signal = signal[change_points[-2] : change_points[-1]]
             level_current = current_signal.median()
             variability_current = current_signal.std()
@@ -60,5 +60,5 @@ class TargetStructuralBreakCorrectionTransformer(BaseEstimator, TransformerMixin
         return y + level_current - y.median()
 
     @staticmethod
-    def _get_change_points(y: pd.Series) -> np.array:
+    def _get_change_points(y: pd.Series) -> np.ndarray:
         return np.array(rpt.KernelCPD(kernel="rbf", jump=1, min_size=26).fit(y.values).predict(pen=10))

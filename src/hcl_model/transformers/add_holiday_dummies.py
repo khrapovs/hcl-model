@@ -95,7 +95,7 @@ class AddHolidayDummies(BaseEstimator, TransformerMixin):
             tolerance=pd.Timedelta(self.lbl_weekly_freq),
         ).fillna(0)
 
-    def _add_dummy_lags_and_merge(self, df: pd.DataFrame, dummy) -> pd.DataFrame:
+    def _add_dummy_lags_and_merge(self, df: pd.DataFrame, dummy: pd.DataFrame) -> pd.DataFrame:
         """
         Add optional forward and backward looking lags and merge to dataframe.
         """

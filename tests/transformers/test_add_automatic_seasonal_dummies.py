@@ -6,7 +6,7 @@ from hcl_model.transformers.add_automatic_seasonal_dummies import AddAutomaticSe
 
 
 class TestAddAutomaticSeasonalDummies:
-    def test_add_automatic_seasonal_dummies(self):
+    def test_add_automatic_seasonal_dummies(self) -> None:
         np.random.seed(42)
         nobs = 200
         lbl_endog = "endog"
@@ -37,36 +37,21 @@ class TestAddAutomaticSeasonalDummies:
 
         correct_cols = [lbl_endog, lbl_dummy.format(10), lbl_dummy.format(2)]
 
-        pd.testing.assert_frame_equal(
-            df.filter(items=correct_cols).sort_index(axis=1),
-            df_result.sort_index(axis=1),
-        )
+        pd.testing.assert_frame_equal(df.filter(items=correct_cols).sort_index(axis=1), df_result.sort_index(axis=1))
 
         df_result = AddAutomaticSeasonalDummies(var_name=lbl_endog, threshold=3, lim_num_dummies=4).transform(
             X=df[[lbl_endog]]
         )
         correct_cols = [lbl_endog, lbl_dummy.format(10), lbl_dummy.format(50), lbl_dummy.format(2), lbl_dummy.format(5)]
 
-        pd.testing.assert_frame_equal(
-            df.filter(items=correct_cols).sort_index(axis=1),
-            df_result.sort_index(axis=1),
-        )
+        pd.testing.assert_frame_equal(df.filter(items=correct_cols).sort_index(axis=1), df_result.sort_index(axis=1))
 
         df_result = AddAutomaticSeasonalDummies(var_name=lbl_endog, threshold=3, lim_num_dummies=6).transform(
             X=df[[lbl_endog]]
         )
-        correct_cols = [
-            lbl_endog,
-            lbl_dummy.format(10),
-            lbl_dummy.format(2),
-            lbl_dummy.format(5),
-            lbl_dummy.format(50),
-        ]
+        correct_cols = [lbl_endog, lbl_dummy.format(10), lbl_dummy.format(2), lbl_dummy.format(5), lbl_dummy.format(50)]
 
-        pd.testing.assert_frame_equal(
-            df.filter(items=correct_cols).sort_index(axis=1),
-            df_result.sort_index(axis=1),
-        )
+        pd.testing.assert_frame_equal(df.filter(items=correct_cols).sort_index(axis=1), df_result.sort_index(axis=1))
 
         num_dummies = 0
         for quantile in np.linspace(0.99, 0.01, num=10):
@@ -79,7 +64,7 @@ class TestAddAutomaticSeasonalDummies:
 
         assert num_dummies == len(weeks) * 2
 
-    def test_add_automatic_seasonal_dummies_raises(self):
+    def test_add_automatic_seasonal_dummies_raises(self) -> None:
         nobs = 200
         lbl_endog = "endog"
         lbl_date = "date"
@@ -96,7 +81,7 @@ class TestAddAutomaticSeasonalDummies:
 
             assert freq in str(e)
 
-    def test_add_automatic_seasonal_dummies_empty(self):
+    def test_add_automatic_seasonal_dummies_empty(self) -> None:
         nobs = 200
         lbl_endog = "endog"
         lbl_date = "date"

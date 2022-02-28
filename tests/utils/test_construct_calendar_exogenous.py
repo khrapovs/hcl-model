@@ -1,3 +1,5 @@
+from typing import Any
+
 import numpy as np
 import pandas as pd
 
@@ -22,7 +24,7 @@ class TestConstructCalendarExogenous:
     lbl_lags = "lags"
     lbl_add_td = "add_td"
 
-    def test_construct_calendar_exogenous(self):
+    def test_construct_calendar_exogenous(self) -> None:
         np.random.seed(42)
         nobs, num_steps = 100, 26
         endog = pd.Series(
@@ -60,7 +62,7 @@ class TestConstructCalendarExogenous:
             exog = construct_calendar_exogenous(endog=endog, num_steps=num_steps, splines_df=num)
             assert exog.shape == (nobs + num_steps, num + 1)
 
-        holidays = [
+        holidays: list[dict[str, Any]] = [
             {
                 self.lbl_holiday_name: self.lbl_cny,
                 self.lbl_country_code: self.lbl_country_code_tw,

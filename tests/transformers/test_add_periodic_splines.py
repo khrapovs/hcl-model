@@ -13,7 +13,7 @@ class TestAddPeriodicSplines:
             index=pd.date_range(start="2015-01-01", freq="7 D", periods=53 * 3),
         )
 
-    def test_add_periodic_splines(self):
+    def test_add_periodic_splines(self) -> None:
         xreg = self.get_xreg_example()
 
         degrees_of_freedom = 3

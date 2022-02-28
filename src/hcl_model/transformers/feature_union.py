@@ -2,6 +2,7 @@ from functools import reduce
 from typing import List, Union
 
 import pandas as pd
+from sklearn.base import TransformerMixin
 from sklearn.pipeline import FeatureUnion, _name_estimators
 
 
@@ -19,7 +20,9 @@ class DatetimeIndexedFeatureUnion(FeatureUnion):
         return reduce(lambda left, right: pd.merge(left, right, left_index=True, right_index=True), Xs)
 
 
-def make_union_of_datetime_indexed_features(*transformers, n_jobs=None, verbose=False):
+def make_union_of_datetime_indexed_features(
+    *transformers: TransformerMixin, n_jobs: int = None, verbose: bool = False
+) -> DatetimeIndexedFeatureUnion:
     """Construct a DatetimeIndexedFeatureUnion from the given transformers.
 
     Simple reimplementation of `sklearn.pipeline.make_union`

@@ -14,3 +14,12 @@ line-length = 120
 [tool.isort]
 profile = "black"
 line_length = 120
+
+[tool.mypy]
+ignore_missing_imports = true
+install_types = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+non_interactive = true
+no_strict_optional = true
