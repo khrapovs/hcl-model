@@ -303,7 +303,7 @@ class TestHCLWeightedTransforms:
     lbl_date = "date"
     lbl_value = "value"
 
-    def generate_input(self) -> Tuple[pd.DataFrame, dict[str, Callable], dict[str, Callable]]:
+    def generate_input(self) -> Tuple[pd.DataFrame, Dict[str, Callable], Dict[str, Callable]]:
         nobs = 30
         endog = pd.Series(
             np.arange(1, nobs + 1) + np.random.normal(size=nobs, scale=1e-1),
